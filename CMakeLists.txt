@@ -124,6 +124,7 @@ endif()
 # Set DARWIN Makefile conditional
 # Substitute MAC_UNIVERSAL_CFLAGS and MAC_UNIVERSAL_LDFLAGS in Makefile
 #AC_FLDIGI_MACOSX
+
 ### win32
 # Set WIN32 Makefile conditional
 # Set HAVE_WINDRES Makefile conditional
@@ -133,7 +134,6 @@ endif()
 ### Non-POSIX compatibility (i.e. mingw32)
 # Sets various Makefile conditionals; see m4/np-compat.m4
 #AC_FLDIGI_NP_COMPAT
-
 
 ### static flag
 # Set ac_cv_static to yes/no
@@ -152,10 +152,6 @@ option(ENABLE_BENCHMARK "Enable benchmarking?" OFF)
 #AC_FLDIGI_TLS
 
 ### std::bind or alternatives
-# Set ac_cv_std_bind or ac_cv_std_tr1_bind to yes/no
-# Define HAVE_STD_BIND or HAVE_STD_TR1_BIND in config.h
-# Substitute BOOST_CPPFLAGS and BOOST_LDFLAGS in Makefile
-# if falling back to Boost
 message(STATUS "Check for working std::bind in <functional>")
 try_compile(HAVE_STD_BIND
     ${CMAKE_BINARY_DIR}
@@ -188,9 +184,6 @@ set(FLDIGI_LINK_LIBS "")
 include(FindPkgConfig)
 
 ### FLTK
-# Substitute FLTK_CFLAGS and FLTK_LIBS in Makefile
-# Set FLUID variable
-# Set HAVE_FLUID Makefile conditional
 find_package(FLTK REQUIRED)
 if(${FLTK_FOUND})
     include_directories(${FLTK_INCLUDE_DIRS})
@@ -204,8 +197,6 @@ if(${FLTK_FOUND})
 endif()
 
 ### OSS
-# Set ac_cv_oss to yes/no
-# Define USE_OSS in config.h
 pkg_check_modules(OSS oss)
 if(${OSS_FOUND})
     include_directories(${OSS_INCLUDE_DIRS})
@@ -215,10 +206,6 @@ if(${OSS_FOUND})
 endif()
 
 ### libpng
-# Required if $ac_cv_want_fldigi is "yes"
-# Set ac_cv_png to yes/no    (not used)
-# Define USE_PNG in config.h (as above)
-# Substitute PNG_CFLAGS and PNG_LIBS in Makefile
 pkg_check_modules(PNG REQUIRED libpng)
 if(PNG_FOUND AND PNG_VERSION VERSION_GREATER "1.2.8")
     include_directories(${PNG_INCLUDE_DIRS})
@@ -228,10 +215,6 @@ if(PNG_FOUND AND PNG_VERSION VERSION_GREATER "1.2.8")
 endif()
 
 ### libsamplerate
-# Required if $ac_cv_want_fldigi is "yes"
-# Set ac_cv_samplerate to yes/no    (not used)
-# Define USE_SAMPLERATE in config.h (as above)
-# Substitute SAMPLERATE_CFLAGS and SAMPLERATE_LIBS in Makefile
 pkg_check_modules(SAMPLERATE REQUIRED samplerate)
 if(SAMPLERATE_FOUND AND SAMPLERATE_VERSION VERSION_GREATER 0.1.1)
     include_directories(${SAMPLERATE_INCLUDE_DIRS})
@@ -276,10 +259,6 @@ if(NOT OSS_FOUND AND NOT PORTAUDIO_FOUND AND NOT PULSEAUDIO_FOUND)
 endif()
 
 ### hamlib
-# Set ac_cv_hamlib to yes/no
-# Define USE_HAMLIB in config.h
-# Substitute HAMLIB_CFLAGS and HAMLIB_LIBS in Makefile
-# Set ENABLE_HAMLIB Makefile conditional
 pkg_check_modules(HAMLIB hamlib)
 if(HAMLIB_FOUND AND HAMLIB_VERSION VERSION_GREATER 1.2.4)
     include_directories(${HAMLIB_INCLUDE_DIRS})
@@ -293,9 +272,6 @@ endif()
 #AM_CONDITIONAL([NEED_HAMLIB_LOCATOR], [test "$need_locator_c" = "yes"])
 
 ### X11
-# Set ac_cv_x to yes/no
-# Define USE_X in config.h
-# Substitute X_CFLAGS and X_LIBS in Makefile
 if(NOT APPLE AND NOT WIN32)
     pkg_check_modules(X x11)
     if(X_FOUND)
@@ -313,20 +289,17 @@ endif()
 #AC_FLDIGI_INTL
 
 ### asciidoc
-# substitute ASCIIDOC and A2X in doc/Makefile
-# set HAVE_ASCIIDOC Makefile conditional
-#AC_FLDIGI_DOCS
+find_program(ASCIIDOC asciidoc)
+find_program(A2X a2x)
+if(ASCIIDOC AND A2X)
+    message(STATUS "Asciidoc found: ${ASCIIDOC}")
+    message(STATUS "     a2x found: ${A2X}")
+    add_subdirectory(doc)
+endif()
 
 ### build info
 # Define various build variables in config.h
 #AC_FLDIGI_BUILD_INFO
-
-### silent build rules
-#AC_FLDIGI_BUILD_RULES
-
-### output
-#AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in doc/Makefile])
-#AC_OUTPUT
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/config.h.in
     ${CMAKE_BINARY_DIR}/config.h
@@ -363,4 +336,5 @@ fldigi build options:
 ")
 
 add_subdirectory(src)
-#add_subdirectory(po)
+add_subdirectory(data)
+add_subdirectory(po)

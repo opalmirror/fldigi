@@ -463,29 +463,29 @@ set(flarq_SOURCES
 
 # Additional files that we distribute
 set(EXTRA_DIST
-	${CMAKE_CURRENT_SOURCE_DIR}/../scripts/mkappbundle.sh
-	${CMAKE_CURRENT_SOURCE_DIR}/../scripts/mkhamlibstatic.sh
-	${CMAKE_CURRENT_SOURCE_DIR}/../scripts/fldigi-shell
-	${CMAKE_CURRENT_SOURCE_DIR}/../scripts/tests/cr.sh
-	${CMAKE_CURRENT_SOURCE_DIR}/../scripts/tests/config-h.sh
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi-psk.png
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi-rtty.png
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.xpm
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.desktop
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/NAVTEX_Stations.csv
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/nsd_bbsss.txt
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/station_table.txt
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/ToR-Stats-SHIP.csv
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/mac/Info.plist.in
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/mac/fldigi.icns
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/win32/fldigi.ico
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.desktop
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.xpm
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/mac/flarq.icns
-	${CMAKE_CURRENT_SOURCE_DIR}/../data/win32/flarq.ico
-	${CMAKE_CURRENT_SOURCE_DIR}/synop-src/synop_tool.cxx
-	${CMAKE_CURRENT_SOURCE_DIR}/synop-src/README
-	${CMAKE_CURRENT_SOURCE_DIR}/synop-src/Makefile
+	../scripts/mkappbundle.sh
+	../scripts/mkhamlibstatic.sh
+	../scripts/fldigi-shell
+	../scripts/tests/cr.sh
+	../scripts/tests/config-h.sh
+	../data/fldigi-psk.png
+	../data/fldigi-rtty.png
+	../data/fldigi.xpm
+	../data/fldigi.desktop
+	../data/NAVTEX_Stations.csv
+	../data/nsd_bbsss.txt
+	../data/station_table.txt
+	../data/ToR-Stats-SHIP.csv
+	../data/mac/Info.plist.in
+	../data/mac/fldigi.icns
+	../data/win32/fldigi.ico
+	../data/flarq.desktop
+	../data/flarq.xpm
+	../data/mac/flarq.icns
+	../data/win32/flarq.ico
+	synop-src/synop_tool.cxx
+	synop-src/README
+	synop-src/Makefile
 )
 
 set(HAMLIB_SRC include/hamlib.h rigcontrol/hamlib.cxx include/rigclass.h rigcontrol/rigclass.cxx)
@@ -542,7 +542,7 @@ endif()
 
 #.EXPORT_ALL_VARIABLES: appbundle nsisinst hamlib-static
 
-#	$(call silent,WRES  ,$@)$(WINDRES) -DRC_BUILD_TIME=\\\"$(shell date +%s)\\\" -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR}/include -I${CMAKE_CURRENT_SOURCE_DIR}/../data/win32 $< -O coff $@
+#	$(call silent,WRES  ,$@)$(WINDRES) -DRC_BUILD_TIME=\\\"$(shell date +%s)\\\" -I${CMAKE_CURRENT_SOURCE_DIR} -Iinclude -I../data/win32 $< -O coff $@
 #fldigi_SOURCES += $(FLDIGI_WIN32_RES_SRC)
 #flarq_SOURCES += $(FLARQ_WIN32_RES_SRC)
 if(WIN32 AND HAVE_WINDRES)
@@ -552,13 +552,13 @@ endif()
 
 #install-exec-local:
 #if WANT_FLDIGI
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/fldigi-shell; then
+#	if test -f ../scripts/fldigi-shell; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(bindir);
-#            $(INSTALL_SCRIPT) ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/fldigi-shell $(DESTDIR)/$(bindir);
+#            $(INSTALL_SCRIPT) ../scripts/fldigi-shell $(DESTDIR)/$(bindir);
 #        fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/ftp_kml_files.sh; then
+#	if test -f ../scripts/ftp_kml_files.sh; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(bindir);
-#        $(INSTALL_SCRIPT) ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/ftp_kml_files.sh $(DESTDIR)/$(bindir);
+#        $(INSTALL_SCRIPT) ../scripts/ftp_kml_files.sh $(DESTDIR)/$(bindir);
 #	fi
 #endif
 
@@ -566,47 +566,47 @@ endif()
 
 #install-data-local:
 #if WANT_FLDIGI
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.xpm; then
+#	if test -f ../data/fldigi.xpm; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/pixmaps;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.xpm $(DESTDIR)/$(datadir)/pixmaps;
+#	    $(INSTALL_DATA) ../data/fldigi.xpm $(DESTDIR)/$(datadir)/pixmaps;
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.desktop; then
+#	if test -f ../data/fldigi.desktop; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/applications;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/fldigi.desktop $(DESTDIR)/$(datadir)/applications;
+#	    $(INSTALL_DATA) ../data/fldigi.desktop $(DESTDIR)/$(datadir)/applications;
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/NAVTEX_Stations.csv; then
+#	if test -f ../data/NAVTEX_Stations.csv; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/NAVTEX_Stations.csv $(DESTDIR)/$(pkgdatadir);
+#	    $(INSTALL_DATA) ../data/NAVTEX_Stations.csv $(DESTDIR)/$(pkgdatadir);
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/nsd_bbsss.txt; then
+#	if test -f ../data/nsd_bbsss.txt; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/nsd_bbsss.txt $(DESTDIR)/$(pkgdatadir);
+#	    $(INSTALL_DATA) ../data/nsd_bbsss.txt $(DESTDIR)/$(pkgdatadir);
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/station_table.txt; then
+#	if test -f ../data/station_table.txt; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/station_table.txt $(DESTDIR)/$(pkgdatadir);
+#	    $(INSTALL_DATA) ../data/station_table.txt $(DESTDIR)/$(pkgdatadir);
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/ToR-Stats-SHIP.csv; then
+#	if test -f ../data/ToR-Stats-SHIP.csv; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/ToR-Stats-SHIP.csv $(DESTDIR)/$(pkgdatadir);
+#	    $(INSTALL_DATA) ../data/ToR-Stats-SHIP.csv $(DESTDIR)/$(pkgdatadir);
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/wmo_list.txt; then
+#	if test -f ../data/wmo_list.txt; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/wmo_list.txt $(DESTDIR)/$(pkgdatadir);
+#	    $(INSTALL_DATA) ../data/wmo_list.txt $(DESTDIR)/$(pkgdatadir);
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../kml/styles.kml; then
+#	if test -f ../kml/styles.kml; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(pkgdatadir)/kml;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../kml/styles.kml $(DESTDIR)/$(pkgdatadir)/kml;
+#	    $(INSTALL_DATA) ../kml/styles.kml $(DESTDIR)/$(pkgdatadir)/kml;
 #	fi
 #endif
 #if WANT_FLARQ
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.xpm; then
+#	if test -f ../data/flarq.xpm; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/pixmaps;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.xpm $(DESTDIR)/$(datadir)/pixmaps;
+#	    $(INSTALL_DATA) ../data/flarq.xpm $(DESTDIR)/$(datadir)/pixmaps;
 #	fi
-#	if test -f ${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.desktop; then
+#	if test -f ../data/flarq.desktop; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/applications;
-#	    $(INSTALL_DATA) ${CMAKE_CURRENT_SOURCE_DIR}/../data/flarq.desktop $(DESTDIR)/$(datadir)/applications;
+#	    $(INSTALL_DATA) ../data/flarq.desktop $(DESTDIR)/$(datadir)/applications;
 #	fi
 #endif
 
@@ -633,14 +633,14 @@ if(HAVE_FLUID AND WANT_FLARQ)
 endif()
 #flgen: $(FLDIGI_FL_SRC) $(FLARQ_FL_SRC)
 #if WANT_FLDIGI
-#	$(call silent,FLUID ,$(FLDIGI_FL_SRC))(cd ${CMAKE_CURRENT_SOURCE_DIR}/include;
+#	$(call silent,FLUID ,$(FLDIGI_FL_SRC))(cd include;
 #	for f in $(FLDIGI_FL_SRC); do
 #	    c=$${f%.fl}.cxx; h=$${f%.fl}.h; h=$${h##*/};
 #	    $(FLUID) -c -o ../$$c -h $$h ../$$f;
 #	done)
 #endif
 #if WANT_FLARQ
-#	$(call silent,FLUID ,$(FLARQ_FL_SRC))(cd ${CMAKE_CURRENT_SOURCE_DIR}/flarq-src/include;
+#	$(call silent,FLUID ,$(FLARQ_FL_SRC))(cd flarq-src/include;
 #	for f in $(FLARQ_FL_SRC); do
 #	    c=$${f%.fl}.cxx; h=$${f%.fl}.h; h=$${h##*/};
 #	    $(FLUID) -c -o ../../$$c -h $$h ../../$$f;
@@ -666,20 +666,20 @@ endif()
 
 #if DARWIN
 #appbundle: $(bin_PROGRAMS)
-#	$(call silent,APPB  ,$(APPBUNDLE_NOLIBS) $(APPBUNDLE))sh ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/mkappbundle.sh "${CMAKE_CURRENT_SOURCE_DIR}/../data" .
+#	$(call silent,APPB  ,$(APPBUNDLE_NOLIBS) $(APPBUNDLE))sh ../scripts/mkappbundle.sh "../data" .
 #    CLEAN_LOCAL += $(APPBUNDLE_NOLIBS) $(APPBUNDLE) $(APPBUNDLE)*.dmg
 #endif
 
 #if HAVE_NSIS
 #nsisinst: $(bin_PROGRAMS)
-#	$(call silent,NSIS  ,$(INSTALLER_FILE))sh ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/mknsisinst.sh "${CMAKE_CURRENT_SOURCE_DIR}/../data" .
+#	$(call silent,NSIS  ,$(INSTALLER_FILE))sh ../scripts/mknsisinst.sh "../data" .
 #    CLEANFILES += $(INSTALLER_FILE)
 #endif
 
 #if WANT_FLDIGI
 #if ENABLE_HAMLIB
 #hamlib-static: $(fldigi_OBJECTS)
-#	$(call silent,HLS   ,fldigi$(EXEEXT))sh ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/mkhamlibstatic.sh fldigi
+#	$(call silent,HLS   ,fldigi$(EXEEXT))sh ../scripts/mkhamlibstatic.sh fldigi
 #endif
 #endif
 
@@ -703,7 +703,7 @@ if(WANT_FLDIGI)
     set_target_properties (fldigi PROPERTIES COMPILE_DEFINITIONS "BUILD_FLDIGI")
     install(TARGETS fldigi
         RUNTIME DESTINATION bin)
-    install(PROGRAMS ../scrips/fldigi-shell
+    install(PROGRAMS ../scripts/fldigi-shell
         DESTINATION bin)
 endif()
 
