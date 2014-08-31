@@ -404,10 +404,7 @@
 
 
 /* Defined if we are using TLS */
-#cmakedefine USE_TLS
-
-/* Define to 1 if we are using x */
-#cmakedefine USE_X 1
+#cmakedefine USE_TLS 1
 
 /* Version number of package */
 #cmakedefine VERSION "@VERSION@"

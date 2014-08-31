@@ -1,4 +1,4 @@
-## Copyright (C) 2007-2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)
+# Copyright (C) 2007-2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)
 # Copyright (c) 2008 Dave Freese, W1HKJ (w1hkj AT w1hkj DOT com)
 # Copyright (c) 2012 Remi Chateauneu, F4ECW (remi dot chateauneu AT gmail DOT com)
 # License: GPLv3+: GNU GPL version 3 or later.
@@ -11,13 +11,13 @@ set(fldigi_SOURCES
 	cw_rtty/rtty.cxx
 	cw_rtty/view_rtty.cxx
 	contestia/contestia.cxx
-	dialogs/confdialog.cxx
+	#dialogs/confdialog.cxx
 	dialogs/fl_digi.cxx
 	dialogs/font_browser.cxx
 	dialogs/Viewer.cxx
 	dialogs/htmlstrings.cxx
-	dialogs/notifydialog.cxx
-	dialogs/record_browse.cxx
+	#dialogs/notifydialog.cxx
+	#dialogs/record_browse.cxx
 	dtmf/dtmf.cxx
 	thor/thor.cxx
 	thor/thorvaricode.cxx
@@ -188,7 +188,7 @@ set(fldigi_SOURCES
 	logbook/adif_io.cxx
 	logbook/calendar.cxx
 	logbook/date.cxx
-	logbook/lgbook.cxx
+	#logbook/lgbook.cxx
 	logbook/logbook.cxx
 	logbook/logsupport.cxx
 	logbook/lookupcall.cxx
@@ -409,7 +409,7 @@ set(EXTRA_fldigi_SOURCES
 set(flarq_SOURCES
 	dialogs/font_browser.cxx
 	flarq-src/arq.cxx
-	flarq-src/arqdialogs.cxx
+	#flarq-src/arqdialogs.cxx
 	flarq-src/arqhelp.cxx
 	flarq-src/b64.cxx
 	flarq-src/flarq.cxx
@@ -461,33 +461,6 @@ set(flarq_SOURCES
 	widgets/FTextView.cxx
 )
 
-# Additional files that we distribute
-set(EXTRA_DIST
-	../scripts/mkappbundle.sh
-	../scripts/mkhamlibstatic.sh
-	../scripts/fldigi-shell
-	../scripts/tests/cr.sh
-	../scripts/tests/config-h.sh
-	../data/fldigi-psk.png
-	../data/fldigi-rtty.png
-	../data/fldigi.xpm
-	../data/fldigi.desktop
-	../data/NAVTEX_Stations.csv
-	../data/nsd_bbsss.txt
-	../data/station_table.txt
-	../data/ToR-Stats-SHIP.csv
-	../data/mac/Info.plist.in
-	../data/mac/fldigi.icns
-	../data/win32/fldigi.ico
-	../data/flarq.desktop
-	../data/flarq.xpm
-	../data/mac/flarq.icns
-	../data/win32/flarq.ico
-	synop-src/synop_tool.cxx
-	synop-src/README
-	synop-src/Makefile
-)
-
 set(HAMLIB_SRC include/hamlib.h rigcontrol/hamlib.cxx include/rigclass.h rigcontrol/rigclass.cxx)
 set(XMLRPC_SRC include/xmlrpc.h misc/xmlrpc.cxx)
 set(FLDIGI_WIN32_RES_SRC fldigirc.rc)
@@ -500,47 +473,40 @@ set(STACK_SRC include/stack.h misc/stack.cxx)
 set(MINGW32_SRC include/compat.h compat/getsysinfo.c compat/mingw.c compat/mingw.h)
 set(NLS_SRC misc/nls.cxx include/nls.h)
 
-set(EXTRA_flarq_SOURCES
-    ${FLARQ_WIN32_RES_SRC}
-    ${COMMON_WIN32_RES_SRC}
-)
-
-if(${ENABLE_HAMLIB})
+if(ENABLE_HAMLIB)
     list(APPEND fldigi_SOURCES ${HAMLIB_SRC})
 endif()
 
-if(${NEED_HAMLIB_LOCATOR})
+if(NEED_HAMLIB_LOCATOR)
     list(APPEND fldigi_SOURCES ${LOCATOR_SRC})
 endif()
 
-if(${ENABLE_BENCHMARK})
+if(ENABLE_BENCHMARK)
     list(APPEND fldigi_SOURCES ${BENCHMARK_SRC})
 endif()
 
-if(${COMPAT_REGEX})
+if(COMPAT_REGEX)
     list(APPEND fldigi_SOURCES ${REGEX_SRC})
     list(APPEND flarq_SOURCES ${REGEX_SRC})
 endif()
 
-if(${COMPAT_STACK})
+if(COMPAT_STACK)
     list(APPEND fldigi_SOURCES ${STACK_SRC})
     list(APPEND flarq_SOURCES ${STACK_SRC})
 endif()
 
-if(${MINGW})
+if(MINGW)
     list(APPEND fldigi_SOURCES ${MINGW32_SRC})
     list(APPEND flarq_SOURCES ${MINGW32_SRC})
 endif()
 
-if(${USE_NLS})
+if(ENABLE_NLS)
     list(APPEND fldigi_SOURCES ${NLS_SRC})
     list(APPEND flarq_SOURCES ${NLS_SRC})
 endif()
 
 ########################################################################
 
-
-#.EXPORT_ALL_VARIABLES: appbundle nsisinst hamlib-static
 
 #	$(call silent,WRES  ,$@)$(WINDRES) -DRC_BUILD_TIME=\\\"$(shell date +%s)\\\" -I${CMAKE_CURRENT_SOURCE_DIR} -Iinclude -I../data/win32 $< -O coff $@
 #fldigi_SOURCES += $(FLDIGI_WIN32_RES_SRC)
@@ -562,18 +528,6 @@ endif()
 #	fi
 #endif
 
-# TODO: xpm files should probably go to $(datadir)/pixmaps/fldigi instead of $(datadir)/pixmaps
-
-#install-data-local:
-#if WANT_FLDIGI
-#	if test -f ../data/fldigi.xpm; then
-#	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/pixmaps;
-#	    $(INSTALL_DATA) ../data/fldigi.xpm $(DESTDIR)/$(datadir)/pixmaps;
-#	fi
-#	if test -f ../data/fldigi.desktop; then
-#	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/applications;
-#	    $(INSTALL_DATA) ../data/fldigi.desktop $(DESTDIR)/$(datadir)/applications;
-#	fi
 #	if test -f ../data/NAVTEX_Stations.csv; then
 #	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/fldigi;
 #	    $(INSTALL_DATA) ../data/NAVTEX_Stations.csv $(DESTDIR)/$(pkgdatadir);
@@ -599,16 +553,6 @@ endif()
 #	    $(INSTALL_DATA) ../kml/styles.kml $(DESTDIR)/$(pkgdatadir)/kml;
 #	fi
 #endif
-#if WANT_FLARQ
-#	if test -f ../data/flarq.xpm; then
-#	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/pixmaps;
-#	    $(INSTALL_DATA) ../data/flarq.xpm $(DESTDIR)/$(datadir)/pixmaps;
-#	fi
-#	if test -f ../data/flarq.desktop; then
-#	    $(mkinstalldirs) $(DESTDIR)/$(datadir)/applications;
-#	    $(INSTALL_DATA) ../data/flarq.desktop $(DESTDIR)/$(datadir)/applications;
-#	fi
-#endif
 
 set(FLDIGI_FL_SRC
 	dialogs/confdialog.fl
@@ -622,32 +566,15 @@ set(FLARQ_FL_SRC flarq-src/arqdialogs.fl)
 if(HAVE_FLUID AND WANT_FLDIGI)
     fltk_wrap_ui(fldigi_ui ${FLDIGI_FL_SRC})
     add_library(fldigi_ui ${fldigi_ui_FLTK_UI_SRCS})
-    set_target_properties (fldigi_ui PROPERTIES
+    set_target_properties(fldigi_ui PROPERTIES
         COMPILE_DEFINITIONS "BUILD_FLDIGI")
 endif()
 
 if(HAVE_FLUID AND WANT_FLARQ)
     fltk_wrap_ui(flarq_ui ${FLARQ_FL_SRC})
     add_library(flarq_ui ${flarq_ui_FLTK_UI_SRCS})
-    include_directories(flarq-src/include)
+    target_include_directories(flarq_ui PRIVATE flarq-src/include)
 endif()
-#flgen: $(FLDIGI_FL_SRC) $(FLARQ_FL_SRC)
-#if WANT_FLDIGI
-#	$(call silent,FLUID ,$(FLDIGI_FL_SRC))(cd include;
-#	for f in $(FLDIGI_FL_SRC); do
-#	    c=$${f%.fl}.cxx; h=$${f%.fl}.h; h=$${h##*/};
-#	    $(FLUID) -c -o ../$$c -h $$h ../$$f;
-#	done)
-#endif
-#if WANT_FLARQ
-#	$(call silent,FLUID ,$(FLARQ_FL_SRC))(cd flarq-src/include;
-#	for f in $(FLARQ_FL_SRC); do
-#	    c=$${f%.fl}.cxx; h=$${f%.fl}.h; h=$${h##*/};
-#	    $(FLUID) -c -o ../../$$c -h $$h ../../$$f;
-#	done)
-#endif
-#endif
-
 
 #if WANT_FLDIGI
 #    WANT_FLDIGI = yes
@@ -686,10 +613,6 @@ endif()
 #tmp_srcdir_var=${CMAKE_CURRENT_SOURCE_DIR}
 #TESTS = $(tmp_srcdir_var)/../scripts/tests/config-h.sh $(tmp_srcdir_var)/../scripts/tests/cr.sh
 
-#if HAVE_ASCIIDOC
-#$(builddir)/../doc/guide.html: $(builddir)/../doc/guide.txt
-#	@$(MAKE) -C $(builddir)/../doc $(AM_MAKEFLAGS) guide.html
-#
 #$(builddir)/dialogs/guide.cxx: $(builddir)/../doc/guide.html
 #	@mkdir -p $(builddir)/dialogs
 #	$(call silent,GUIDE ,$@)sed 's/\\/\\\\/g; s/"/\\"/g; s/$$/\\n\\/g; 1 s/.*/const char* szBeginner = "&/; $$ s/.*/&n";/' $< > $@
@@ -700,18 +623,20 @@ if(WANT_FLDIGI)
     add_executable(fldigi ${fldigi_SOURCES})
     add_dependencies(fldigi fldigi_ui)
     target_link_libraries(fldigi ${FLDIGI_LINK_LIBS} fldigi_ui)
-    set_target_properties (fldigi PROPERTIES COMPILE_DEFINITIONS "BUILD_FLDIGI")
+    set_target_properties (fldigi PROPERTIES
+        COMPILE_DEFINITIONS "BUILD_FLDIGI -DPKGDATADIR=\"${CMAKE_INSTALL_FULL_DATADIR}\"")
     install(TARGETS fldigi
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS ../scripts/fldigi-shell
-        DESTINATION bin)
+        DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(WANT_FLARQ)
     add_executable(flarq ${flarq_SOURCES})
     add_dependencies(flarq flarq_ui)
-    target_link_libraries(flarq ${FLDIGI_LINK_LIBS} flarq_ui)
+    target_link_libraries(flarq ${FLARQ_LINK_LIBS} flarq_ui)
+    target_include_directories(flarq PRIVATE flarq-src/include)
     set_target_properties (flarq PROPERTIES COMPILE_DEFINITIONS "BUILD_FLARQ")
     install(TARGETS flarq
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

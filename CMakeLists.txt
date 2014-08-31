@@ -1,21 +1,26 @@
 project(fldigi)
 cmake_minimum_required(VERSION 2.8)
 
-# Set default built type
+# Set default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(FLDIGI_LINK_LIBS "")
+set(FLARQ_LINK_LIBS "")
+
 # Setup options with defaults.
 option(WANT_FLDIGI "Build Fldigi." ON)
 option(WANT_FLARQ "Build Flarq." ON)
-option(USE_NLS "Use Native Language Support" ON)
+option(ENABLE_NLS "Use Native Language Support" ON)
 option(ENABLE_HAMLIB "Enable hamlib for rig control." ON)
 option(ENABLE_MAC_UNIVERSAL "Build a universal binary on Mac OS X" OFF)
 option(ENABLE_STATIC "Use static linking for some libraries." OFF)
 
 set(CMAKE_CXX_FLAGS "-Wall -ffast-math -finline-functions")
 
+# Setup default include directories.
 include_directories(BEFORE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/include
@@ -24,11 +29,11 @@ include_directories(BEFORE
     ${CMAKE_SOURCE_DIR}/src/fileselector
     ${CMAKE_SOURCE_DIR}/src/xmlrpcpp
     ${CMAKE_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}/src
 )
 
 # Setup standard install locations.
 include(GNUInstallDirs)
-add_definitions(-DPKGDATADIR="${CMAKE_INSTALL_FULL_DATADIR}")
 
 # major and minor must be integers; patch may
 # contain other characters or be empty
@@ -78,24 +83,6 @@ foreach(HEADER ${CHECK_HEADERS})
     check_include_file_cxx(${HEADER} HAVE_${UPPER_${HEADER}})
 endforeach()
 
-
-# Checks for typedefs, structures, and compiler characteristics.
-#AC_C_CONST
-#AC_C_INLINE
-#AC_TYPE_INT16_T
-#AC_TYPE_INT32_T
-#AC_TYPE_INT64_T
-#AC_TYPE_INT8_T
-#AC_C_RESTRICT
-#AC_TYPE_SIZE_T
-#AC_HEADER_TIME
-#AC_STRUCT_TM
-#AC_TYPE_UINT16_T
-#AC_TYPE_UINT32_T
-#AC_TYPE_UINT64_T
-#AC_TYPE_UINT8_T
-#AC_C_VOLATILE
-
 # Checks for library functions.
 include(CheckFunctionExists)
 check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
@@ -109,13 +96,14 @@ endforeach()
 # Check for O_CLOEXEC
 #AC_FCNTL_FLAGS
 
-#AC_PRESERVE_HELP_ORDER
 
 ### Internationalization
 find_package(Gettext)
-if(${GETTEXT_FOUND} AND USE_NLS)
+if(${GETTEXT_FOUND} AND ENABLE_NLS)
     set(HAVE_GETTEXT TRUE)
-    add_definitions(-DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
+    add_definitions(-DUSE_NLS -DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
+else()
+    message(STATUS "Native language support requested but gettext was not found.")
 endif()
 
 ###### OS support
@@ -123,13 +111,17 @@ endif()
 # Set ac_cv_mac_universal to yes/no
 # Set DARWIN Makefile conditional
 # Substitute MAC_UNIVERSAL_CFLAGS and MAC_UNIVERSAL_LDFLAGS in Makefile
-#AC_FLDIGI_MACOSX
+if(APPLE)
+    # Do the right thing at some point.
+endif()
 
 ### win32
 # Set WIN32 Makefile conditional
 # Set HAVE_WINDRES Makefile conditional
 # Substitute WINDRES in Makefile
-#AC_FLDIGI_WIN32
+if(WIN32)
+    # Do the right thing at some point.
+endif()
 
 ### Non-POSIX compatibility (i.e. mingw32)
 # Sets various Makefile conditionals; see m4/np-compat.m4
@@ -147,9 +139,12 @@ endif()
 option(ENABLE_BENCHMARK "Enable benchmarking?" OFF)
 
 ### TLS flag
-# Set ac_cv_tls to yes/no
 # Define USE_TLS in config.h
-#AC_FLDIGI_TLS
+include(CheckThreadLocalStorage)
+check_thread_local_storage()
+if(HAVE_TLS)
+    set(USE_TLS TRUE)
+endif()
 
 ### std::bind or alternatives
 message(STATUS "Check for working std::bind in <functional>")
@@ -180,7 +175,6 @@ if(NOT ${HAVE_STD_BIND} AND NOT ${HAVE_STD_TR1_BIND})
 endif()
 
 
-set(FLDIGI_LINK_LIBS "")
 include(FindPkgConfig)
 
 ### FLTK
@@ -188,6 +182,7 @@ find_package(FLTK REQUIRED)
 if(${FLTK_FOUND})
     include_directories(${FLTK_INCLUDE_DIRS})
     list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
+    list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --cxxflags
         OUTPUT_VARIABLE FLTK_CXXFLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLTK_CXXFLAGS}")
@@ -203,6 +198,8 @@ if(${OSS_FOUND})
     list(APPEND FLDIGI_LINK_LIBS ${OSS_LIBRARIES})
     add_definitions(-DUSE_OSS)
     set(USE_OSS TRUE)
+else()
+    set(OSS_VERSION "Not found")
 endif()
 
 ### libpng
@@ -264,12 +261,12 @@ if(HAMLIB_FOUND AND HAMLIB_VERSION VERSION_GREATER 1.2.4)
     include_directories(${HAMLIB_INCLUDE_DIRS})
     list(APPEND FLDIGI_LINK_LIBS ${HAMLIB_LIBRARIES})
     add_definitions(-DUSE_HAMLIB)
-endif()
-
 # We compile our own copy of hamlib's locator.c if hamlib is not available
 # or if it is version <= 1.2.9, which has a broken azimuth_long_path function
-#AX_COMPARE_VERSION([$pkg_hamlib_version], [le], [1.2.9], [need_locator_c=yes], [need_locator_c=no])
-#AM_CONDITIONAL([NEED_HAMLIB_LOCATOR], [test "$need_locator_c" = "yes"])
+    if(HAMLIB_VERSION VERSION_LESS 1.2.10)
+        set(NEED_HAMLIB_LOCATOR TRUE)
+    endif()
+endif()
 
 ### X11
 if(NOT APPLE AND NOT WIN32)
@@ -283,10 +280,10 @@ endif()
 
 
 ### libintl
-# Substitute INTL_CFLAGS in Makefile
-# Substitute INTL_LIBS in Makefile
-# (default to LIBINTL)
-#AC_FLDIGI_INTL
+find_package(Libintl)
+if(LIBINTL_FOUND)
+    list(APPEND FLDIGI_LINK_LIBS ${LIBINTL_LIBRARIES})
+endif()
 
 ### asciidoc
 find_program(ASCIIDOC asciidoc)
@@ -295,17 +292,14 @@ if(ASCIIDOC AND A2X)
     message(STATUS "Asciidoc found: ${ASCIIDOC}")
     message(STATUS "     a2x found: ${A2X}")
     add_subdirectory(doc)
+else()
+    message(STATUS "Both asciidoc and a2x are required to build man pages and html guide.")
 endif()
-
-### build info
-# Define various build variables in config.h
-#AC_FLDIGI_BUILD_INFO
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/config.h.in
     ${CMAKE_BINARY_DIR}/config.h
 )
 add_definitions(-DHAVE_CONFIG_H)
-
 
 
 ### summary
@@ -317,10 +311,10 @@ Configuration summary:
   Static linking .............. ${ENABLE_STATIC}
   Build Type .................. ${CMAKE_BUILD_TYPE}
 
-  fldigi ...................... ${BUILD_FLDIGI}
-  flarq ....................... ${BUILD_FLARQ}
+  fldigi ...................... ${WANT_FLDIGI}
+  flarq ....................... ${WANT_FLARQ}
 
-  i18n ........................ ${USE_NLS}
+  i18n ........................ ${ENABLE_NLS}
 ")
 
 message("
@@ -337,4 +331,6 @@ fldigi build options:
 
 add_subdirectory(src)
 add_subdirectory(data)
-add_subdirectory(po)
+if(${GETTEXT_FOUND} AND ENABLE_NLS)
+    add_subdirectory(po)
+endif()
