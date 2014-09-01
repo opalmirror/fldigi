@@ -178,6 +178,9 @@ endif()
 include(FindPkgConfig)
 
 ### FLTK
+# OpenGL and Forms libraries are not required.
+set(FLTK_SKIP_OPENGL TRUE)
+set(FLTK_SKIP_FORMS TRUE)
 find_package(FLTK REQUIRED)
 if(${FLTK_FOUND})
     include_directories(${FLTK_INCLUDE_DIRS})

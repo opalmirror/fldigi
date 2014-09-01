@@ -30,7 +30,7 @@ set(A2X_ARGS "--format=manpage" "--destination-dir=${CMAKE_CURRENT_BINARY_DIR}" 
 foreach(_infile ${MAN_SRC})
     get_filename_component(_outname ${_infile} NAME)
     string(REPLACE ".txt" "" _outfile ${_outname})
-    message("Adding manpage ${_outfile} target.")
+    message(STATUS "Adding manpage target: ${_outfile}")
     add_custom_command(OUTPUT ${_outfile}
         COMMAND ${A2X} ${A2X_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${_infile}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -43,7 +43,7 @@ endforeach()
 foreach(_infile ${FLDIGI_HTML_SRC})
     get_filename_component(_outname ${_infile} NAME)
     string(REPLACE ".txt" ".html" _outfile ${_outname})
-    message("Adding manpage ${_outfile} target.")
+    message(STATUS "Adding doc target: ${_outfile}")
     add_custom_command(OUTPUT ${_outfile}
         COMMAND ${ASCIIDOC} ${ASCIIDOC_ARGS} -o ${_outfile} ${CMAKE_CURRENT_SOURCE_DIR}/${_infile}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
