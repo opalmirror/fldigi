@@ -194,8 +194,6 @@ set(FLTK_SKIP_FORMS TRUE)
 find_package(FLTK REQUIRED)
 if(${FLTK_FOUND})
     include_directories(${FLTK_INCLUDE_DIRS})
-    list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
-    list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
     # Set required CXX flags.
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --cxxflags
         OUTPUT_VARIABLE FLTK_CXXFLAGS)
@@ -203,15 +201,19 @@ if(${FLTK_FOUND})
     # FindFLTK does not properly handle ldflags for static libraries.
     get_filename_component(FLTK_LIB_EXT ${FLTK_BASE_LIBRARY} EXT)
     if(${FLTK_LIB_EXT} STREQUAL ${CMAKE_STATIC_LIBRARY_SUFFIX})
-        execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --ldstaticflags
+        message(STATUS "Using static FLTK libraries.")
+        execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --use-images --ldstaticflags
             OUTPUT_VARIABLE FLTK_LDFLAGS)
         separate_arguments(FLTK_LDFLAGS)
         foreach(_FLAG ${FLTK_LDFLAGS})
             string(REGEX MATCH "^-l.+" _LDFLAG ${_FLAG})
+            string(STRIP "${_LDFLAG}" _LDFLAG)
             list(APPEND FLTK_LIBRARIES ${_LDFLAG})
         endforeach()
         list(REMOVE_DUPLICATES FLTK_LIBRARIES)
     endif()
+    list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
+    list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
     set(HAVE_FLUID TRUE)
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --version
         OUTPUT_VARIABLE FLTK_VERSION)
