@@ -11,13 +11,10 @@ set(fldigi_SOURCES
 	cw_rtty/rtty.cxx
 	cw_rtty/view_rtty.cxx
 	contestia/contestia.cxx
-	#dialogs/confdialog.cxx
 	dialogs/fl_digi.cxx
 	dialogs/font_browser.cxx
 	dialogs/Viewer.cxx
 	dialogs/htmlstrings.cxx
-	#dialogs/notifydialog.cxx
-	#dialogs/record_browse.cxx
 	dtmf/dtmf.cxx
 	thor/thor.cxx
 	thor/thorvaricode.cxx
@@ -188,7 +185,6 @@ set(fldigi_SOURCES
 	logbook/adif_io.cxx
 	logbook/calendar.cxx
 	logbook/date.cxx
-	#logbook/lgbook.cxx
 	logbook/logbook.cxx
 	logbook/logsupport.cxx
 	logbook/lookupcall.cxx
@@ -622,7 +618,7 @@ endif()
 if(WANT_FLDIGI)
     add_executable(fldigi ${fldigi_SOURCES})
     add_dependencies(fldigi fldigi_ui)
-    target_link_libraries(fldigi ${FLDIGI_LINK_LIBS} ${CMAKE_DL_LIBS} fldigi_ui)
+    target_link_libraries(fldigi ${FLDIGI_LINK_LIBS} fldigi_ui ${FLTK_LDFLAGS})
     set_target_properties (fldigi PROPERTIES
         COMPILE_DEFINITIONS "BUILD_FLDIGI -DPKGDATADIR=\"${CMAKE_INSTALL_FULL_DATADIR}\"")
     install(TARGETS fldigi
@@ -634,7 +630,7 @@ endif()
 if(WANT_FLARQ)
     add_executable(flarq ${flarq_SOURCES})
     add_dependencies(flarq flarq_ui)
-    target_link_libraries(flarq ${FLARQ_LINK_LIBS} ${CMAKE_DL_LIBS} flarq_ui)
+    target_link_libraries(flarq ${FLARQ_LINK_LIBS} flarq_ui ${FLTK_LDFLAGS})
     target_include_directories(flarq PRIVATE flarq-src/include)
     set_target_properties (flarq PROPERTIES COMPILE_DEFINITIONS "BUILD_FLARQ")
     install(TARGETS flarq

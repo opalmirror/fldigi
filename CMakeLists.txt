@@ -66,8 +66,10 @@ set(PACKAGE_DOCS "http://www.w1hkj.com/FldigiHelp/index.html")
 set(PACKAGE_GUIDE "http://www.w1hkj.com/beginners.html")
 set(FLARQ_DOCS "http://www.w1hkj.com/FlarqHelpFiles/flarq.html")
 
-exec_program(date OUTPUT_VARIABLE BUILD_DATE)
-cmake_host_system_information(RESULT BUILD_HOST QUERY HOSTNAME)
+execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
+if(NOT CMAKE_VERSION VERSION_LESS "2.8.12")
+    cmake_host_system_information(RESULT BUILD_HOST QUERY HOSTNAME)
+endif()
 
 # Checks for programs.
 #AC_USE_SYSTEM_EXTENSIONS
@@ -86,12 +88,19 @@ endforeach()
 # Checks for library functions.
 include(CheckFunctionExists)
 check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
-set(CHECK_FUNCS "clock_gettime dlopen getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
+set(CHECK_FUNCS "clock_gettime getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
 separate_arguments(CHECK_FUNCS)
 foreach(FUNC ${CHECK_FUNCS})
     string(TOUPPER ${FUNC} UPPER_${FUNC})
     check_function_exists(${FUNC} HAVE_${UPPER_${FUNC}})
 endforeach()
+
+# Check for external library functions.
+include(CheckLibraryExists)
+check_library_exists(dl dlopen "" HAVE_DLOPEN)
+if(HAVE_DLOPEN)
+    list(APPEND FLDIGI_LINK_LIBS ${CMAKE_DL_LIBS})
+endif()
 
 # Check for O_CLOEXEC
 #AC_FCNTL_FLAGS
@@ -186,9 +195,17 @@ if(${FLTK_FOUND})
     include_directories(${FLTK_INCLUDE_DIRS})
     list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
     list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
+    # Set required CXX flags.
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --cxxflags
         OUTPUT_VARIABLE FLTK_CXXFLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLTK_CXXFLAGS}")
+    # FindFLTK does not properly handle ldflags for static libraries.
+    get_filename_component(FLTK_LIB_EXT ${FLTK_BASE_LIBRARY} EXT)
+    if(${FLTK_LIB_EXT} STREQUAL ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --ldstaticflags
+            OUTPUT_VARIABLE FLTK_LDFLAGS)
+        string(STRIP ${FLTK_LDFLAGS} FLTK_LDFLAGS)
+    endif()
     set(HAVE_FLUID TRUE)
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --version
         OUTPUT_VARIABLE FLTK_VERSION)
