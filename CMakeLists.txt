@@ -206,6 +206,7 @@ if(${FLTK_FOUND})
         execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --ldstaticflags
             OUTPUT_VARIABLE FLTK_LDFLAGS)
         string(STRIP ${FLTK_LDFLAGS} FLTK_LDFLAGS)
+        set(CMAKE_EXE_LINKER_FLAGS ${FLTK_LDFLAGS})
     endif()
     set(HAVE_FLUID TRUE)
     exec_program(${FLTK_CONFIG_SCRIPT} ARGS --version
