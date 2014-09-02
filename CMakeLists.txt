@@ -67,6 +67,7 @@ set(PACKAGE_GUIDE "http://www.w1hkj.com/beginners.html")
 set(FLARQ_DOCS "http://www.w1hkj.com/FlarqHelpFiles/flarq.html")
 
 execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
+string(STRIP "${BUILD_DATE}" BUILD_DATE)
 if(NOT CMAKE_VERSION VERSION_LESS "2.8.12")
     cmake_host_system_information(RESULT BUILD_HOST QUERY HOSTNAME)
 endif()
