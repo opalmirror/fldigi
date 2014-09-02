@@ -86,7 +86,7 @@ endforeach()
 # Checks for library functions.
 include(CheckFunctionExists)
 check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
-set(CHECK_FUNCS "clock_gettime getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
+set(CHECK_FUNCS "clock_gettime dlopen getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
 separate_arguments(CHECK_FUNCS)
 foreach(FUNC ${CHECK_FUNCS})
     string(TOUPPER ${FUNC} UPPER_${FUNC})
