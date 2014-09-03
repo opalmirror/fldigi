@@ -1,3 +1,5 @@
+# CMake configuration written by Richard Shaw, KF5OIM (hobbes1069 AT gmail DOT com)
+
 project(fldigi)
 cmake_minimum_required(VERSION 2.8)
 
@@ -6,7 +8,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# Add local cmake modules to the search path.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# Setup empty variables to add to.
 set(FLDIGI_LINK_LIBS "")
 set(FLARQ_LINK_LIBS "")
 
@@ -18,6 +23,7 @@ option(ENABLE_HAMLIB "Enable hamlib for rig control." ON)
 option(ENABLE_MAC_UNIVERSAL "Build a universal binary on Mac OS X" OFF)
 option(ENABLE_STATIC "Use static linking for some libraries." OFF)
 
+# Setup default CXX flags
 set(CMAKE_CXX_FLAGS "-Wall -ffast-math -finline-functions")
 
 # Setup default include directories.
@@ -32,11 +38,13 @@ include_directories(BEFORE
     ${CMAKE_BINARY_DIR}/src
 )
 
-# Setup standard install locations.
+# Setup standard install location variables for *nix systems.
 include(GNUInstallDirs)
 
+### Version Info
 # major and minor must be integers; patch may
 # contain other characters or be empty
+# FIXME: Probably should be pulled from configure.ac
 set(FLDIGI_VERSION_MAJOR 3)
 set(FLDIGI_VERSION_MINOR 22)
 set(FLDIGI_VERSION_PATCH .0CN)
@@ -45,12 +53,16 @@ set(FLARQ_VERSION_MINOR 3)
 set(FLARQ_VERSION_PATCH .3)
 
 set(FLDIGI_VERSION ${FLDIGI_VERSION_MAJOR}.${FLDIGI_VERSION_MINOR}${FLDIGI_VERSION_PATCH})
+set(FLARQ_VERSION ${FLDIGI_VERSION_MAJOR}.${FLDIGI_VERSION_MINOR}${FLDIGI_VERSION_PATCH})
 
+# FIXME: Do we need to implement this?
 #AM_MAINTAINER_MODE
-set(COPYRIGHT "Copyright (C) 2007, 2008, 2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)")
 
-set(FLDIGI_AUTHORS "Dave Freese, Stelios Bounanos, Leigh Klotz, Remi Chateauneu, and others")
+# Set string variables that get set in config.h
+set(COPYRIGHT "Copyright (C) 2007, 2008, 2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)")
 set(FLARQ_AUTHORS "Dave Freese")
+set(FLARQ_DOCS "http://www.w1hkj.com/FlarqHelpFiles/flarq.html")
+set(FLDIGI_AUTHORS "Dave Freese, Stelios Bounanos, Leigh Klotz, Remi Chateauneu, and others")
 set(PACKAGE "${CMAKE_PROJECT_NAME}")
 set(PACKAGE_NAME "${PACKAGE}")
 set(PACKAGE_VERSION "${FLDIGI_VERSION}")
@@ -64,15 +76,21 @@ set(PACKAGE_PROJ "http://developer.berlios.de/project/showfiles.php?group_id=914
 set(PACKAGE_NEWBUG "https://fedorahosted.org/fldigi/newticket")
 set(PACKAGE_DOCS "http://www.w1hkj.com/FldigiHelp/index.html")
 set(PACKAGE_GUIDE "http://www.w1hkj.com/beginners.html")
-set(FLARQ_DOCS "http://www.w1hkj.com/FlarqHelpFiles/flarq.html")
 
+# Grok full date and time
 execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
 string(STRIP "${BUILD_DATE}" BUILD_DATE)
+
+# Grok hostname
+# FIXME: Need something for CMake versions less than 2.8.12.
 if(NOT CMAKE_VERSION VERSION_LESS "2.8.12")
     cmake_host_system_information(RESULT BUILD_HOST QUERY HOSTNAME)
+else()
+    set(BUILD_HOST "Unknown")
 endif()
 
 # Checks for programs.
+# What is this and do we need it?
 #AC_USE_SYSTEM_EXTENSIONS
 
 # Checks for header files.
@@ -88,8 +106,8 @@ endforeach()
 
 # Checks for library functions.
 include(CheckFunctionExists)
-check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
-set(CHECK_FUNCS "clock_gettime getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
+#check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
+set(CHECK_FUNCS "clock_gettime error_at_line getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
 separate_arguments(CHECK_FUNCS)
 foreach(FUNC ${CHECK_FUNCS})
     string(TOUPPER ${FUNC} UPPER_${FUNC})
@@ -104,12 +122,13 @@ if(HAVE_DLOPEN)
 endif()
 
 # Check for O_CLOEXEC
+# Do we need to check for this?
 #AC_FCNTL_FLAGS
 
 
 ### Internationalization
 find_package(Gettext)
-if(${GETTEXT_FOUND} AND ENABLE_NLS)
+if(GETTEXT_FOUND AND ENABLE_NLS)
     set(HAVE_GETTEXT TRUE)
     add_definitions(-DUSE_NLS -DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
 else()
@@ -155,6 +174,18 @@ check_thread_local_storage()
 if(HAVE_TLS)
     set(USE_TLS TRUE)
 endif()
+
+
+### Check if fopen support O_CLOEXEC
+message(STATUS "Check for working O_CLOEXEC")
+try_compile(HAVE_O_CLOEXEC
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/cmake/TryCompileO_CLOEXEC.cxx
+)
+if(HAVE_O_CLOEXEC)
+    message(STATUS "Check for working O_CLOEXEC -- works")
+endif()
+    
 
 ### std::bind or alternatives
 message(STATUS "Check for working std::bind in <functional>")
@@ -359,6 +390,6 @@ fldigi build options:
 
 add_subdirectory(src)
 add_subdirectory(data)
-if(${GETTEXT_FOUND} AND ENABLE_NLS)
+if(GETTEXT_FOUND AND ENABLE_NLS)
     add_subdirectory(po)
 endif()
