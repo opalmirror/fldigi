@@ -223,11 +223,12 @@ include(FindPkgConfig)
 set(FLTK_SKIP_OPENGL TRUE)
 set(FLTK_SKIP_FORMS TRUE)
 find_package(FLTK REQUIRED)
-if(${FLTK_FOUND})
+if(FLTK_FOUND)
     include_directories(${FLTK_INCLUDE_DIRS})
     # Set required CXX flags.
-    exec_program(${FLTK_CONFIG_SCRIPT} ARGS --cxxflags
+    execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --cxxflags
         OUTPUT_VARIABLE FLTK_CXXFLAGS)
+    string(STRIP "${FLTK_CXXFLAGS}" FLTK_CXXFLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLTK_CXXFLAGS}")
     # FindFLTK does not properly handle ldflags for static libraries.
     get_filename_component(FLTK_LIB_EXT ${FLTK_BASE_LIBRARY} EXT)
@@ -246,8 +247,11 @@ if(${FLTK_FOUND})
     list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
     list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
     set(HAVE_FLUID TRUE)
-    exec_program(${FLTK_CONFIG_SCRIPT} ARGS --version
-        OUTPUT_VARIABLE FLTK_VERSION)
+else()
+    include_directories(${FLTK_INCLUDE_DIRS})
+    list(APPEND FLDIGI_LINK_LIBS ${FLTK_LIBRARIES})
+    list(APPEND FLARQ_LINK_LIBS ${FLTK_LIBRARIES})
+    set(HAVE_FLUID TRUE)
 endif()
 
 ### OSS

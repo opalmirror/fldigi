@@ -616,7 +616,7 @@ endif()
 
 
 if(WANT_FLDIGI)
-    add_executable(fldigi ${fldigi_SOURCES})
+    add_executable(fldigi WIN32 MACOSX_BUNDLE ${fldigi_SOURCES})
     add_dependencies(fldigi fldigi_ui)
     target_link_libraries(fldigi fldigi_ui ${FLDIGI_LINK_LIBS})
     set_target_properties (fldigi PROPERTIES
