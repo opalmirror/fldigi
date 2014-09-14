@@ -235,16 +235,58 @@ else()
       execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --version
         OUTPUT_VARIABLE FLTK_VERSION)
       string(STRIP "${FLTK_VERSION}" FLTK_VERSION)
+    # Parse the version into individual variables.
+      string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" FLTK_VERSION_MAJOR "${FLTK_VERSION}")
+      string(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+" "\\1" FLTK_VERSION_MINOR "${FLTK_VERSION}")
+      string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" FLTK_VERSION_PATCH "${FLTK_VERSION}")
+      mark_as_advanced(FLTK_VERSION_MAJOR FLTK_VERSION_MINOR FLTK_VERSION_PATCH)
 
-    #
-    # Try to find FLTK library
-    #
+      #
+      # Try to find FLTK library
+      #
       execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --libs
         OUTPUT_VARIABLE _FLTK_POSSIBLE_LIBS)
       if(_FLTK_POSSIBLE_LIBS)
         get_filename_component(_FLTK_POSSIBLE_LIBRARY_DIR
           ${_FLTK_POSSIBLE_LIBS} PATH)
       endif()
+      #
+      # Set component arguments to fltk-config
+      #
+      set(FLTK_CONFIG_ARGS)
+      if(NOT FLTK_SKIP_OPENGL)
+        list(APPEND FLTK_CONFIG_ARGS "--use-gl")
+      endif()
+      if(NOT FLTK_SKIP_FORMS)
+        list(APPEND FLTK_CONFIG_ARGS "--use-forms")
+      endif()
+      if(NOT FLTK_SKIP_IMAGES)
+        list(APPEND FLTK_CONFIG_ARGS "--use-images")
+      endif()
+
+      #
+      # Get CXX flags
+      #
+      execute_process(COMMAND
+        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --cxxflags
+        OUTPUT_VARIABLE FLTK_CXX_FLAGS
+      )
+      string(STRIP "${FLTK_CXX_FLAGS}" FLTK_CXX_FLAGS)
+
+      #
+      # Get LDFLAGS and LDSTATICFLAGS
+      #
+      execute_process(COMMAND
+        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldflags
+        OUTPUT_VARIABLE FLTK_LD_FLAGS
+      )
+      execute_process(COMMAND
+        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldstaticflags
+        OUTPUT_VARIABLE FLTK_LDSTATIC_FLAGS
+      )
+      # Remove any whitespace
+      string(STRIP "${FLTK_LD_FLAGS}" FLTK_LD_FLAGS)
+      string(STRIP "${FLTK_LDSTATIC_FLAGS}" FLTK_LDSTATIC_FLAGS)
     endif()
   endif()
 
@@ -284,7 +326,7 @@ else()
 endif()
 
 # Append all of the required libraries together (by default, everything)
-set(FLTK_LIBRARIES ${FLTK_BASE_LIBRARY})
+set(FLTK_LIBRARIES)
 if(NOT FLTK_SKIP_IMAGES)
   list(APPEND FLTK_LIBRARIES ${FLTK_IMAGES_LIBRARY})
 endif()
@@ -296,6 +338,7 @@ if(NOT FLTK_SKIP_OPENGL)
   set(FLTK_INCLUDE_DIRS ${FLTK_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
   list(REMOVE_DUPLICATES FLTK_INCLUDE_DIR)
 endif()
+list(APPEND FLTK_LIBRARIES ${FLTK_BASE_LIBRARY})
 
 include(FindPackageHandleStandardArgs)
 if(FLTK_SKIP_FLUID)
@@ -308,6 +351,12 @@ else()
     REQUIRED_VARS FLTK_LIBRARIES FLTK_INCLUDE_DIR FLTK_FLUID_EXECUTABLE
     VERSION_VAR FLTK_VERSION
   )
+endif()
+
+if(NOT FLTK_FIND_QUIETLY)
+  message("   FLTK CXX Flags: ${FLTK_CXX_FLAGS}")
+  message("   FLTK Linker Flags: ${FLTK_LD_FLAGS}")
+  message("   FLTK Static Linker Flags: ${FLTK_LDSTATIC_FLAGS}")
 endif()
 
 if(FLTK_FOUND)
