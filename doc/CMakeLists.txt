@@ -1,6 +1,3 @@
-# Copyright (C) 2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)
-# License: GPLv3+: GNU GPL version 3 or later.
-
 set(ASCIIDOC_CONF asciidoc.conf)
 set(FLDIGI_MAN_SRC fldigi.1.txt fldigi-shell.1.txt)
 set(FLARQ_MAN_SRC flarq.1.txt)
@@ -58,10 +55,10 @@ if(NOT TARGET doc)
 endif()
 
 install(FILES ${MANFILES}
-    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 OPTIONAL
 )
 install(FILES ${HTMLFILES}
-    DESTINATION ${CMAKE_INSTALL_DOCDIR}
+    DESTINATION ${CMAKE_INSTALL_DOCDIR} OPTIONAL
 )
 
 
