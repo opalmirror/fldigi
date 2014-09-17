@@ -219,7 +219,8 @@ else()
   #
   # Try to find FLTK include dir, version, and libraries using fltk-config
   #
-  if(UNIX)
+  if(UNIX OR (MINGW AND CMAKE_CROSSCOMPILING))
+  #if(UNIX)
     find_program(FLTK_CONFIG_SCRIPT fltk-config 
       PATHS
       ${FLTK_BIN_DIR}

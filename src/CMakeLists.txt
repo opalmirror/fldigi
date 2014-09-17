@@ -1,9 +1,6 @@
-# Copyright (C) 2007-2009 Stelios Bounanos, M0GLD (m0gld AT enotty DOT net)
-# Copyright (c) 2008 Dave Freese, W1HKJ (w1hkj AT w1hkj DOT com)
-# Copyright (c) 2012 Remi Chateauneu, F4ECW (remi dot chateauneu AT gmail DOT com)
-# License: GPLv3+: GNU GPL version 3 or later.
-
 # Sources that we build. It is OK to have headers here.
+set(XMLRPC_SRC include/xmlrpc.h misc/xmlrpc.cxx)
+
 set(fldigi_SOURCES
 	combo/combo.cxx
 	cw_rtty/cw.cxx
@@ -313,7 +310,7 @@ set(fldigi_SOURCES
 	xmlrpcpp/base64.h
 	libtiniconv/tiniconv.c
 	libtiniconv/tiniconv_desc.c
-        include/xmlrpc.h misc/xmlrpc.cxx
+        ${XMLRPC_SRC}
 )
 
 # Sources that are part of the distribution but are not compiled directly
@@ -405,7 +402,6 @@ set(EXTRA_fldigi_SOURCES
 set(flarq_SOURCES
 	dialogs/font_browser.cxx
 	flarq-src/arq.cxx
-	#flarq-src/arqdialogs.cxx
 	flarq-src/arqhelp.cxx
 	flarq-src/b64.cxx
 	flarq-src/flarq.cxx
@@ -457,46 +453,51 @@ set(flarq_SOURCES
 	widgets/FTextView.cxx
 )
 
-set(HAMLIB_SRC include/hamlib.h rigcontrol/hamlib.cxx include/rigclass.h rigcontrol/rigclass.cxx)
-set(XMLRPC_SRC include/xmlrpc.h misc/xmlrpc.cxx)
 set(FLDIGI_WIN32_RES_SRC fldigirc.rc)
 set(FLARQ_WIN32_RES_SRC flarq-src/flarqrc.rc)
 set(COMMON_WIN32_RES_SRC common.rc)
-set(LOCATOR_SRC misc/locator.c)
-set(BENCHMARK_SRC include/benchmark.h misc/benchmark.cxx)
-set(REGEX_SRC compat/regex.h compat/regex.c)
-set(STACK_SRC include/stack.h misc/stack.cxx)
-set(MINGW32_SRC include/compat.h compat/getsysinfo.c compat/mingw.c compat/mingw.h)
-set(NLS_SRC misc/nls.cxx include/nls.h)
 
 if(ENABLE_HAMLIB)
-    list(APPEND fldigi_SOURCES ${HAMLIB_SRC})
+    list(APPEND fldigi_SOURCES
+        include/hamlib.h
+        rigcontrol/hamlib.cxx
+        include/rigclass.h
+        rigcontrol/rigclass.cxx
+    )
 endif()
 
 if(NEED_HAMLIB_LOCATOR)
-    list(APPEND fldigi_SOURCES ${LOCATOR_SRC})
+    list(APPEND fldigi_SOURCES misc/locator.c)
 endif()
 
 if(ENABLE_BENCHMARK)
-    list(APPEND fldigi_SOURCES ${BENCHMARK_SRC})
+    list(APPEND fldigi_SOURCES include/benchmark.h misc/benchmark.cxx)
 endif()
 
 if(COMPAT_REGEX)
-    list(APPEND fldigi_SOURCES ${REGEX_SRC})
-    list(APPEND flarq_SOURCES ${REGEX_SRC})
+    list(APPEND fldigi_SOURCES compat/regex.h compat/regex.c)
+    list(APPEND flarq_SOURCES compat/regex.h compat/regex.c)
 endif()
 
 if(COMPAT_STACK)
+    set(STACK_SRC include/stack.h misc/stack.cxx)
     list(APPEND fldigi_SOURCES ${STACK_SRC})
     list(APPEND flarq_SOURCES ${STACK_SRC})
 endif()
 
 if(MINGW)
+    set(MINGW32_SRC
+        include/compat.h
+        compat/getsysinfo.c
+        compat/mingw.c
+        compat/mingw.h
+    )
     list(APPEND fldigi_SOURCES ${MINGW32_SRC})
     list(APPEND flarq_SOURCES ${MINGW32_SRC})
 endif()
 
 if(ENABLE_NLS)
+    set(NLS_SRC misc/nls.cxx include/nls.h)
     list(APPEND fldigi_SOURCES ${NLS_SRC})
     list(APPEND flarq_SOURCES ${NLS_SRC})
 endif()
@@ -561,14 +562,14 @@ set(FLARQ_FL_SRC flarq-src/arqdialogs.fl)
 
 if(HAVE_FLUID AND WANT_FLDIGI)
     fltk_wrap_ui(fldigi_ui ${FLDIGI_FL_SRC})
-    add_library(fldigi_ui ${fldigi_ui_FLTK_UI_SRCS})
+    add_library(fldigi_ui STATIC ${fldigi_ui_FLTK_UI_SRCS})
     set_target_properties(fldigi_ui PROPERTIES
         COMPILE_DEFINITIONS "BUILD_FLDIGI")
 endif()
 
 if(HAVE_FLUID AND WANT_FLARQ)
     fltk_wrap_ui(flarq_ui ${FLARQ_FL_SRC})
-    add_library(flarq_ui ${flarq_ui_FLTK_UI_SRCS})
+    add_library(flarq_ui STATIC ${flarq_ui_FLTK_UI_SRCS})
     target_include_directories(flarq_ui PRIVATE flarq-src/include)
 endif()
 

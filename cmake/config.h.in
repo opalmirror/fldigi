@@ -9,7 +9,7 @@
 #cmakedefine BENCHMARK_MODE
 
 /* Build platform */
-#define BUILD_BUILD_PLATFORM "${CMAKE_SYSTEM}"
+#define BUILD_BUILD_PLATFORM "${CMAKE_SYSTEM_NAME}"
 
 /* Compiler */
 #define BUILD_COMPILER "${CMAKE_CXX_COMPILER_NAMES} ${CMAKE_CXX_COMPILER_VERSION}"
@@ -438,13 +438,13 @@
 #cmakedefine _UINT8_T
 
 /* Define to 1 if we are building on cygwin or mingw */
-#cmakedefine _WINDOWS
+#cmakedefine _WINDOWS 1
 
 /* Define to 1 if we are building on cygwin or mingw */
-#cmakedefine __MINGW32__
+#cmakedefine __MINGW32__ 1
 
 /* Define to 1 if we are building on cygwin or mingw */
-#cmakedefine __WOE32__
+#cmakedefine __WOE32__ 1
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #cmakedefine const

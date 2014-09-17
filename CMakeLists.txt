@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
+    message(STATUS "Built type not specified, defaulting to ${CMAKE_BUILD_TYPE}")
 endif()
 
 # Add local cmake modules to the search path.
@@ -24,7 +25,7 @@ option(ENABLE_MAC_UNIVERSAL "Build a universal binary on Mac OS X" OFF)
 option(ENABLE_STATIC "Use static linking for some libraries." OFF)
 
 # Setup default CXX flags
-set(CMAKE_CXX_FLAGS "-Wall -ffast-math -finline-functions")
+set(CMAKE_CXX_FLAGS "-pipe -Wall -fexceptions -ffast-math -finline-functions")
 
 # Setup default include directories.
 include_directories(BEFORE
@@ -40,6 +41,13 @@ include_directories(BEFORE
 
 # Setup standard install location variables for *nix systems.
 include(GNUInstallDirs)
+# Make this visible to the cmake gui.
+mark_as_advanced(CLEAR
+    CMAKE_INSTALL_BINDIR
+    CMAKE_INSTALL_DATADIR
+    CMAKE_INSTALL_DOCDIR
+    CMAKE_INSTALL_LOCALEDIR
+)
 
 ### Version Info
 # major and minor must be integers; patch may
@@ -78,16 +86,26 @@ set(PACKAGE_DOCS "http://www.w1hkj.com/FldigiHelp/index.html")
 set(PACKAGE_GUIDE "http://www.w1hkj.com/beginners.html")
 
 # Grok full date and time
-execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
-string(STRIP "${BUILD_DATE}" BUILD_DATE)
-
-# Grok hostname
-# FIXME: Need something for CMake versions less than 2.8.12.
-if(NOT CMAKE_VERSION VERSION_LESS "2.8.12")
-    cmake_host_system_information(RESULT BUILD_HOST QUERY HOSTNAME)
-else()
-    set(BUILD_HOST "Unknown")
+if(UNIX OR MSYS OR (MINGW AND CMAKE_CROSSCOMPILING))
+    execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
+    string(STRIP "${BUILD_DATE}" BUILD_DATE)
+elseif(WIN32 AND NOT MSYS)
+    # Assume native windows build and cmd.exe shell.
+    execute_process(COMMAND date /t OUTPUT_VARIABLE _date)
+    execute_process(COMMAND time /t OUTPUT_VARIABLE _time)
+    if(_date AND _time)
+        set(BUILD_DATE "${_date} ${_time}")
+    else()
+        set(BUILD_DATE "unknown")
+    endif()
+    unset(_date)
+    unset(_time)
 endif()
+
+# Grok hostname, set to unknown first in case process fails.
+set(BUILD_HOST "Unknown")
+execute_process(COMMAND hostname OUTPUT_VARIABLE BUILD_HOST)
+string(STRIP "${BUILD_HOST}" BUILD_HOST)
 
 # Checks for programs.
 # What is this and do we need it?
@@ -107,7 +125,7 @@ endforeach()
 # Checks for library functions.
 include(CheckFunctionExists)
 #check_function_exists(error_at_line HAVE_ERROR_AT_LINE)
-set(CHECK_FUNCS "clock_gettime error_at_line getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
+set(CHECK_FUNCS "error_at_line getaddrinfo gethostbyname hstrerror gmtime_r localtime_r memmove memset mkdir select setenv snprintf socket socketpair strcasecmp strcasestr strchr strdup strerror strlcpy strncasecmp strrchr strstr strtol uname unsetenv vsnprintf")
 separate_arguments(CHECK_FUNCS)
 foreach(FUNC ${CHECK_FUNCS})
     string(TOUPPER ${FUNC} UPPER_${FUNC})
@@ -116,15 +134,32 @@ endforeach()
 
 # Check for external library functions.
 include(CheckLibraryExists)
+if(UNIX)
+    check_library_exists(rt clock_gettime "" HAVE_CLOCK_GETTIME)
+else()
+    check_library_exists(winpthread clock_gettime "" HAVE_CLOCK_GETTIME)
+    check_library_exists(pthread sem_unlink "" HAVE_SEM_UNLINK)
+    check_library_exists(pthread sem_timedwait "" HAVE_SEM_TIMEDWAIT)
+endif()
 check_library_exists(dl dlopen "" HAVE_DLOPEN)
 if(HAVE_DLOPEN)
     list(APPEND FLDIGI_LINK_LIBS ${CMAKE_DL_LIBS})
 endif()
 
+# AC_HEADER_TIME / TIME_WITH_SYS_TIME CMake conversion workaround.
+# This autoconf macro is considered obsolete. All modern systems should be able
+# to include both time.h and sys/time.h without issue.
+# Only used in src/misc/timeops.cxx
+set(TIME_WITH_SYS_TIME TRUE)
+
 # Check for O_CLOEXEC
 # Do we need to check for this?
 #AC_FCNTL_FLAGS
 
+# Pthread Library
+find_package(Threads REQUIRED)
+list(APPEND FLDIGI_LINK_LIBS ${CMAKE_THREAD_LIBS_INIT})
+list(APPEND FLARQ_LINK_LIBS ${CMAKE_THREAD_LIBS_INIT})
 
 ### Internationalization
 find_package(Gettext)
@@ -132,7 +167,7 @@ if(GETTEXT_FOUND AND ENABLE_NLS)
     set(HAVE_GETTEXT TRUE)
     add_definitions(-DUSE_NLS -DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
 else()
-    message(STATUS "Native language support requested but gettext was not found.")
+    message(WARNING "Native language support requested but gettext was not found.")
 endif()
 
 ###### OS support
@@ -145,11 +180,22 @@ if(APPLE)
 endif()
 
 ### win32
-# Set WIN32 Makefile conditional
-# Set HAVE_WINDRES Makefile conditional
-# Substitute WINDRES in Makefile
 if(WIN32)
-    # Do the right thing at some point.
+    set(__WOE32__ TRUE)
+    set(__WIN32__ TRUE)
+    set(__MINGW32__ TRUE)
+    set(_WINDOWS TRUE)
+    set(HAVE_WINDRES TRUE)
+    set(RES_FILES
+        src/fldigirc.rc
+        src/flarq-src/flarqrc.rc
+        src/common.rc
+        src/flsynop.rc
+    )
+    set(CMAKE_RC_COMPILER_INIT windres)
+    enable_language(RC)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 endif()
 
 ### Non-POSIX compatibility (i.e. mingw32)
@@ -222,6 +268,8 @@ include(FindPkgConfig)
 # OpenGL and Forms libraries are not required.
 set(FLTK_SKIP_OPENGL TRUE)
 set(FLTK_SKIP_FORMS TRUE)
+# Try to find the config way first
+#find_package(FLTK REQUIRED CONFIG)
 find_package(FLTK REQUIRED)
 if(FLTK_FOUND)
     include_directories(${FLTK_INCLUDE_DIRS})
@@ -247,14 +295,20 @@ if(FLTK_FOUND)
 endif()
 
 ### OSS
-pkg_check_modules(OSS oss)
-if(${OSS_FOUND})
-    include_directories(${OSS_INCLUDE_DIRS})
-    list(APPEND FLDIGI_LINK_LIBS ${OSS_LIBRARIES})
-    add_definitions(-DUSE_OSS)
-    set(USE_OSS TRUE)
+if(WIN32)
+    message(STATUS "OSS disabled for windows targets.")
+    set(USE_OSS FALSE)
+    set(OSS_VERSION "Disabled")
 else()
-    set(OSS_VERSION "Not found")
+    pkg_check_modules(OSS oss)
+    if(OSS_FOUND)
+        include_directories(${OSS_INCLUDE_DIRS})
+        list(APPEND FLDIGI_LINK_LIBS ${OSS_LIBRARIES})
+        add_definitions(-DUSE_OSS)
+        set(USE_OSS TRUE)
+    else()
+        set(OSS_VERSION "Not found")
+    endif()
 endif()
 
 ### libpng
@@ -298,12 +352,18 @@ if(PORTAUDIO_FOUND AND PORTAUDIO_VERSION VERSION_GREATER 18)
 endif()
 
 ### pulseaudio
-pkg_check_modules(PULSEAUDIO libpulse-simple)
-if(PULSEAUDIO_FOUND AND PULSEAUDIO_VERSION VERSION_GREATER 0.9.7)
-    include_directories(${PULSEAUDIO_INCLUDE_DIRS})
-    list(APPEND FLDIGI_LINK_LIBS ${PULSEAUDIO_LIBRARIES})
-    add_definitions(-DUSE_PULSEAUDIO)
-    set(USE_PULSEAUDIO TRUE)
+if(WIN32)
+    message(STATUS "PulseAudio disabled for windows targets.")
+    set(USE_PULSEAUDIO FALSE)
+    set(PULSEAUDIO_VERSION "Disabled")
+else()
+    pkg_check_modules(PULSEAUDIO libpulse-simple)
+    if(PULSEAUDIO_FOUND AND PULSEAUDIO_VERSION VERSION_GREATER 0.9.7)
+        include_directories(${PULSEAUDIO_INCLUDE_DIRS})
+        list(APPEND FLDIGI_LINK_LIBS ${PULSEAUDIO_LIBRARIES})
+        add_definitions(-DUSE_PULSEAUDIO)
+        set(USE_PULSEAUDIO TRUE)
+    endif()
 endif()
 
 if(NOT OSS_FOUND AND NOT PORTAUDIO_FOUND AND NOT PULSEAUDIO_FOUND)
@@ -321,6 +381,8 @@ if(HAMLIB_FOUND AND HAMLIB_VERSION VERSION_GREATER 1.2.4)
     if(HAMLIB_VERSION VERSION_LESS 1.2.10)
         set(NEED_HAMLIB_LOCATOR TRUE)
     endif()
+else()
+    set(HAMLIB_VERSION "Not found")
 endif()
 
 ### X11
