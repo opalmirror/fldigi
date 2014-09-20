@@ -49,6 +49,9 @@ namespace qrbind {
 
 #include "threads.h"
 #include "qrunner/fqueue.h"
+#ifdef __WIN32__
+  #include "socket.h"
+#endif
 
 #ifndef __MINGW32__
 #  define QRUNNER_READ(fd__, buf__, len__) read(fd__, buf__, len__)
