@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
-    message(STATUS "Built type not specified, defaulting to ${CMAKE_BUILD_TYPE}")
+    message(STATUS "Build type not specified, defaulting to ${CMAKE_BUILD_TYPE}")
 endif()
 
 # Add local cmake modules to the search path.
@@ -137,7 +137,11 @@ include(CheckLibraryExists)
 if(UNIX)
     check_library_exists(rt clock_gettime "" HAVE_CLOCK_GETTIME)
 else()
-    check_library_exists(winpthread clock_gettime "" HAVE_CLOCK_GETTIME)
+    check_library_exists(pthread clock_gettime "" HAVE_CLOCK_GETTIME)
+    if(HAVE_CLOCK_GETTIME)
+        set(HAVE_GMTIME_R TRUE)
+        add_definitions(-DGMTIME_R)
+    endif()
     check_library_exists(pthread sem_unlink "" HAVE_SEM_UNLINK)
     check_library_exists(pthread sem_timedwait "" HAVE_SEM_TIMEDWAIT)
 endif()
@@ -171,6 +175,14 @@ else()
 endif()
 
 ###### OS support
+
+# Setup defaults for non-posix systems.
+if(NOT UNIX)
+    # Force use of internal regex.
+    set(HAVE_REGEX_H FALSE)
+    set(COMPAT_REGEX TRUE)
+endif()
+
 ### OSX
 # Set ac_cv_mac_universal to yes/no
 # Set DARWIN Makefile conditional
@@ -192,15 +204,15 @@ if(WIN32)
         src/common.rc
         src/flsynop.rc
     )
+    include_directories(data/win32)
     set(CMAKE_RC_COMPILER_INIT windres)
     enable_language(RC)
+    execute_process(COMMAND date +%s OUTPUT_VARIABLE RC_BUILD_TIME)
+    string(STRIP "${RC_BUILD_TIME}" RC_BUILD_TIME)
+    add_definitions(-DRC_BUILD_TIME="\\\"${RC_BUILD_TIME}\\\"")
     set(CMAKE_RC_COMPILE_OBJECT
         "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
 endif()
-
-### Non-POSIX compatibility (i.e. mingw32)
-# Sets various Makefile conditionals; see m4/np-compat.m4
-#AC_FLDIGI_NP_COMPAT
 
 ### static flag
 # Set ac_cv_static to yes/no
@@ -208,9 +220,6 @@ endif()
 #AC_FLDIGI_STATIC
 
 ### benchmark mode
-# Set ac_cv_benchmark to yes/no
-# Define BENCHMARK_MODE in config.h
-# Set ENABLE_BENCHMARK Makefile conditional
 option(ENABLE_BENCHMARK "Enable benchmarking?" OFF)
 
 ### TLS flag
@@ -400,6 +409,7 @@ endif()
 find_package(Libintl)
 if(LIBINTL_FOUND)
     list(APPEND FLDIGI_LINK_LIBS ${LIBINTL_LIBRARIES})
+    list(APPEND FLARQ_LINK_LIBS ${LIBINTL_LIBRARIES})
 endif()
 
 ### asciidoc
