@@ -10,11 +10,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Add local cmake modules to the search path.
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH
+    ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_BINARY_DIR}/cmake
+)
 
-# Setup empty variables to add to.
-set(FLDIGI_LINK_LIBS "")
-set(FLARQ_LINK_LIBS "")
 
 # Setup options with defaults.
 option(WANT_FLDIGI "Build Fldigi." ON)
@@ -56,9 +56,11 @@ mark_as_advanced(CLEAR
 set(FLDIGI_VERSION_MAJOR 3)
 set(FLDIGI_VERSION_MINOR 22)
 set(FLDIGI_VERSION_PATCH .0CN)
+string(REPLACE "." "" FLDIGI_VERSION_PATCH_NODOT "${FLDIGI_VERSION_PATCH}")
 set(FLARQ_VERSION_MAJOR 4)
 set(FLARQ_VERSION_MINOR 3)
 set(FLARQ_VERSION_PATCH .3)
+string(REPLACE "." "" FLARQ_VERSION_PATCH_NODOT "${FLARQ_VERSION_PATCH}")
 
 set(FLDIGI_VERSION ${FLDIGI_VERSION_MAJOR}.${FLDIGI_VERSION_MINOR}${FLDIGI_VERSION_PATCH})
 set(FLARQ_VERSION ${FLDIGI_VERSION_MAJOR}.${FLDIGI_VERSION_MINOR}${FLDIGI_VERSION_PATCH})
@@ -380,18 +382,25 @@ if(NOT OSS_FOUND AND NOT PORTAUDIO_FOUND AND NOT PULSEAUDIO_FOUND)
 endif()
 
 ### hamlib
-pkg_check_modules(HAMLIB hamlib)
-if(HAMLIB_FOUND AND HAMLIB_VERSION VERSION_GREATER 1.2.4)
-    include_directories(${HAMLIB_INCLUDE_DIRS})
-    list(APPEND FLDIGI_LINK_LIBS ${HAMLIB_LIBRARIES})
-    add_definitions(-DUSE_HAMLIB)
-# We compile our own copy of hamlib's locator.c if hamlib is not available
-# or if it is version <= 1.2.9, which has a broken azimuth_long_path function
-    if(HAMLIB_VERSION VERSION_LESS 1.2.10)
+if(ENABLE_HAMLIB)
+    pkg_check_modules(HAMLIB hamlib)
+    if(HAMLIB_FOUND AND HAMLIB_VERSION VERSION_GREATER 1.2.4)
+        include_directories(${HAMLIB_INCLUDE_DIRS})
+        list(APPEND FLDIGI_LINK_LIBS ${HAMLIB_LIBRARIES})
+        add_definitions(-DUSE_HAMLIB)
+        # We compile our own copy of hamlib's locator.c if hamlib is not
+        # available or if it is version <= 1.2.9, which has a broken
+        # azimuth_long_path function
+        if(HAMLIB_VERSION VERSION_LESS 1.2.10)
+            set(NEED_HAMLIB_LOCATOR TRUE)
+        endif()
+    elseif(HAMLIB_FOUND)
+        message(ERROR "Hamlib found but your version (${HAMLIB_VERSION}) is too old.")
+    else()
+        message(WARNING "Hamlib support requested but the library could not be found.")
+        set(HAMLIB_VERSION "Not found")
         set(NEED_HAMLIB_LOCATOR TRUE)
     endif()
-else()
-    set(HAMLIB_VERSION "Not found")
 endif()
 
 ### X11
@@ -406,10 +415,16 @@ endif()
 
 
 ### libintl
-find_package(Libintl)
-if(LIBINTL_FOUND)
-    list(APPEND FLDIGI_LINK_LIBS ${LIBINTL_LIBRARIES})
-    list(APPEND FLARQ_LINK_LIBS ${LIBINTL_LIBRARIES})
+if(ENABLE_NLS)
+    find_package(Libintl)
+    if(LIBINTL_FOUND)
+        list(APPEND FLDIGI_LINK_LIBS ${LIBINTL_LIBRARIES})
+        list(APPEND FLARQ_LINK_LIBS ${LIBINTL_LIBRARIES})
+    else()
+        mesage(WARNING "Language support requested but libintl was not found.
+Disabling language support.")
+        set(ENABLE_NLS OFF)
+    endif()
 endif()
 
 ### asciidoc
@@ -462,25 +477,15 @@ if(GETTEXT_FOUND AND ENABLE_NLS)
     add_subdirectory(po)
 endif()
 
-if(WIN32)
-    #include(NSISPack)
-    if(NOT WANT_FLDIGI AND NOT WANT_FLARQ)
-        message(WARNING "Neither FLDigi or FLArq set to build, an installer is not possible.")
-    endif()
-    include(InstallRequiredSystemLibraries)
-    set(FLDIGI_NAME "Fldigi")
-    set(FLDIGI_BIN "fldigi.exe")
-    set(FLARQ_NAME "Flarq")
-    set(FLARQ_BIN "flarq.exe")
-    include(CPack)
-    # Doesn't work...
-    #set_target_properties(package PROPERTIES
-    #    COMPILE_DEFINITIONS "HAVE_FLDIG;HAVE_FLARQ")
-    if(BUILD_FLDIGI)
-        set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "-DWANT_FLDIGI")
-    endif()
-    if(BUILD_FLARQ)
-        set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS} -DWANT_FLARQ")
-    endif()
-endif()
 
+if(WIN32 AND (WANT_FLDIGI OR WANT_FLARQ))
+    # Collect required runtimes (libraries not linked statically)
+    # Must be run at install time since binaries are scanned.
+    configure_file(cmake/GetDependencies.cmake.in cmake/GetDependencies.cmake
+        @ONLY)
+    install(SCRIPT ${CMAKE_BINARY_DIR}/cmake/GetDependencies.cmake)
+    include(MakeNsisInstaller)
+    include(CPack)
+elseif(WIN32)
+    message(WARNING "Neither Fldigi or Flarq set to build, an installer is not possible.")
+endif()

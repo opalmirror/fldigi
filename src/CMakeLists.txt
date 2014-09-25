@@ -313,91 +313,6 @@ set(fldigi_SOURCES
         ${XMLRPC_SRC}
 )
 
-# Sources that are part of the distribution but are not compiled directly
-set(EXTRA_fldigi_SOURCES
-	blank/blank.cxx
-	blank/blank.h
-	fileselector/flnfc_common.cxx
-	feld/Feld7x7-14.cxx
-	feld/Feld7x7n-14.cxx
-	feld/FeldDx-14.cxx
-	feld/FeldFat-14.cxx
-	feld/FeldHell-12.cxx
-	feld/FeldLittle-12.cxx
-	feld/FeldLo8-14.cxx
-	feld/FeldLow-14.cxx
-	feld/FeldModern-14.cxx
-	feld/FeldModern8-14.cxx
-	feld/FeldNarr-14.cxx
-	feld/FeldReal-14.cxx
-	feld/FeldStyl-14.cxx
-	feld/FeldVert-14.cxx
-	feld/FeldWide-14.cxx
-	include/Fl_Text_Buffer_mod.H
-	include/Fl_Text_Display_mod.H
-	include/Fl_Text_Editor_mod.H
-	mfsk/mfsk-pic.cxx
-	mt63/alias_1k.dat
-	mt63/alias_2k.dat
-	mt63/morse.dat
-	mt63/symbol.dat
-	mt63/alias_k5.dat
-	mt63/mt63intl.dat
-	rsid/rsid_defs.cxx
-	trx/tune.cxx
-	dialogs/guide.cxx
-	libtiniconv/tiniconv.h
-	libtiniconv/tiniconv_int.h
-	libtiniconv/encdec/ascii.h
-	libtiniconv/encdec/big5.h
-	libtiniconv/encdec/ces_big5.h
-	libtiniconv/encdec/ces_gbk.h
-	libtiniconv/encdec/cp1250.h
-	libtiniconv/encdec/cp1251.h
-	libtiniconv/encdec/cp1252.h
-	libtiniconv/encdec/cp1253.h
-	libtiniconv/encdec/cp1254.h
-	libtiniconv/encdec/cp1255.h
-	libtiniconv/encdec/cp1256.h
-	libtiniconv/encdec/cp1257.h
-	libtiniconv/encdec/cp1258.h
-	libtiniconv/encdec/cp866.h
-	libtiniconv/encdec/cp936ext.h
-	libtiniconv/encdec/cp936.h
-	libtiniconv/encdec/euc_cn.h
-	libtiniconv/encdec/flushwc.h
-	libtiniconv/encdec/gb2312.h
-	libtiniconv/encdec/gbkext1.h
-	libtiniconv/encdec/gbkext2.h
-	libtiniconv/encdec/gbkext_inv.h
-	libtiniconv/encdec/gbk.h
-	libtiniconv/encdec/iso2022_jp.h
-	libtiniconv/encdec/iso8859_10.h
-	libtiniconv/encdec/iso8859_11.h
-	libtiniconv/encdec/iso8859_13.h
-	libtiniconv/encdec/iso8859_14.h
-	libtiniconv/encdec/iso8859_15.h
-	libtiniconv/encdec/iso8859_16.h
-	libtiniconv/encdec/iso8859_1.h
-	libtiniconv/encdec/iso8859_2.h
-	libtiniconv/encdec/iso8859_3.h
-	libtiniconv/encdec/iso8859_4.h
-	libtiniconv/encdec/iso8859_5.h
-	libtiniconv/encdec/iso8859_6.h
-	libtiniconv/encdec/iso8859_7.h
-	libtiniconv/encdec/iso8859_8.h
-	libtiniconv/encdec/iso8859_9.h
-	libtiniconv/encdec/jisx0201.h
-	libtiniconv/encdec/jisx0208.h
-	libtiniconv/encdec/koi8_r.h
-	libtiniconv/encdec/koi8_ru.h
-	libtiniconv/encdec/koi8_u.h
-	libtiniconv/encdec/mac_cyrillic.h
-	libtiniconv/encdec/ucs2.h
-	libtiniconv/encdec/utf7.h
-	libtiniconv/encdec/utf8.h
-	libtiniconv/encdec/vietcomb.h
-)
 
 set(flarq_SOURCES
 	dialogs/font_browser.cxx
@@ -457,7 +372,7 @@ set(FLDIGI_WIN32_RES_SRC fldigirc.rc)
 set(FLARQ_WIN32_RES_SRC flarq-src/flarqrc.rc)
 set(COMMON_WIN32_RES_SRC common.rc)
 
-if(ENABLE_HAMLIB)
+if(ENABLE_HAMLIB AND HAMLIB_FOUND)
     list(APPEND fldigi_SOURCES
         include/hamlib.h
         rigcontrol/hamlib.cxx
@@ -502,12 +417,6 @@ if(ENABLE_NLS)
     list(APPEND flarq_SOURCES ${NLS_SRC})
 endif()
 
-########################################################################
-
-
-#	$(call silent,WRES  ,$@)$(WINDRES) -DRC_BUILD_TIME=\\\"$(shell date +%s)\\\" -I${CMAKE_CURRENT_SOURCE_DIR} -Iinclude -I../data/win32 $< -O coff $@
-#fldigi_SOURCES += $(FLDIGI_WIN32_RES_SRC)
-#flarq_SOURCES += $(FLARQ_WIN32_RES_SRC)
 if(WIN32 AND HAVE_WINDRES)
     list(APPEND fldigi_SOURCES ${FLDIGI_WIN32_RES_SRC})
     list(APPEND flarq_SOURCES ${FLARQ_WIN32_RES_SRC})
@@ -609,11 +518,6 @@ endif()
 
 #tmp_srcdir_var=${CMAKE_CURRENT_SOURCE_DIR}
 #TESTS = $(tmp_srcdir_var)/../scripts/tests/config-h.sh $(tmp_srcdir_var)/../scripts/tests/cr.sh
-
-#$(builddir)/dialogs/guide.cxx: $(builddir)/../doc/guide.html
-#	@mkdir -p $(builddir)/dialogs
-#	$(call silent,GUIDE ,$@)sed 's/\\/\\\\/g; s/"/\\"/g; s/$$/\\n\\/g; 1 s/.*/const char* szBeginner = "&/; $$ s/.*/&n";/' $< > $@
-#dialogs/htmlstrings.cxx: $(builddir)/dialogs/guide.cxx
 
 
 if(WANT_FLDIGI)
