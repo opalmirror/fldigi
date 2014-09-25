@@ -7,10 +7,15 @@
 !define HAVE_FLDIGI "@HAVE_FLDIGI@"
 !define FLDIGI_NAME "@FLDIGI_NAME@"
 !define FLDIGI_BINARY "@FLDIGI_BIN@"
+!define FLDIGI_LINK "@FLDIGI_LINK@"
+!define FLDIGI_DOCS_URL "@PACKAGE_DOCS@"
 !define HAVE_FLARQ "@HAVE_FLARQ@"
 !define FLARQ_NAME "@FLARQ_NAME@"
 !define FLARQ_BINARY "@FLARQ_BIN@"
+!define FLARQ_LINK "@FLARQ_LINK@"
+!define FLARQ_DOCS_URL "@FLARQ_DOCS@"
 !define FLDIGI_LOCALE_DIR "@LOCALEDIR@"
+!define GUIDE_URL "@PACKAGE_GUIDE@"
 !define RUNTIMES "@RUNTIMES@"
 
 # Variables
@@ -161,14 +166,14 @@ Section "Start Menu Shortcuts"
     CreateDirectory "${SM_PATH}"
     !ifdef HAVE_FLDIGI
         ${If} $WANT_FLDIGI == 'true'
-            CreateShortCut "${SM_PATH}\${FLDIGI_NAME}.lnk" "$INSTDIR\${FLDIGI_BINARY}" "" "$INSTDIR\${FLDIGI_BINARY}" 0
+            CreateShortCut "${SM_PATH}\${FLDIGI_NAME}.lnk" "$INSTDIR\${FLDIGI_LINK}" "" "$INSTDIR\${FLDIGI_LINK}" 0
             CreateShortCut "${SM_PATH}\${FLDIGI_NAME} Beginners' Guide.lnk" "${GUIDE_URL}"
             CreateShortCut "${SM_PATH}\${FLDIGI_NAME} Documentation.lnk" "${FLDIGI_DOCS_URL}"
         ${EndIf}
     !endif
     !ifdef HAVE_FLARQ
         ${If} $WANT_FLARQ == 'true'
-            CreateShortCut "${SM_PATH}\${FLARQ_NAME}.lnk" "$INSTDIR\${FLARQ_BINARY}" "" "$INSTDIR\${FLARQ_BINARY}" 0
+            CreateShortCut "${SM_PATH}\${FLARQ_NAME}.lnk" "$INSTDIR\${FLARQ_LINK}" "" "$INSTDIR\${FLARQ_LINK}" 0
             CreateShortCut "${SM_PATH}\${FLARQ_NAME} Documentation.lnk" "${FLARQ_DOCS_URL}"
         ${EndIf}
     !endif
@@ -178,14 +183,14 @@ SectionEnd
 Section "Desktop Shortcuts"
     !ifdef HAVE_FLDIGI
         ${If} $WANT_FLDIGI == 'true'
-            CreateShortCut "$DESKTOP\${FLDIGI_DESCRIPTION}.lnk" "$INSTDIR\${FLDIGI_BINARY}" "" \
-                           "$INSTDIR\${FLDIGI_BINARY}" 0
+            CreateShortCut "$DESKTOP\${FLDIGI_DESCRIPTION}.lnk" "$INSTDIR\${FLDIGI_LINK}" "" \
+                           "$INSTDIR\${FLDIGI_LINK}" 0
         ${EndIf}
     !endif
     !ifdef HAVE_FLARQ
         ${If} $WANT_FLARQ == 'true'
-            CreateShortCut "$DESKTOP\${FLARQ_DESCRIPTION}.lnk" "$INSTDIR\${FLARQ_BINARY}" "" \
-                           "$INSTDIR\${FLARQ_BINARY}" 0
+            CreateShortCut "$DESKTOP\${FLARQ_DESCRIPTION}.lnk" "$INSTDIR\${FLARQ_LINK}" "" \
+                           "$INSTDIR\${FLARQ_LINK}" 0
         ${EndIf}
     !endif
 SectionEnd
@@ -194,14 +199,14 @@ SectionEnd
 Section /o "Quick Launch Shortcuts"
     !ifdef HAVE_FLDIGI
         ${If} $WANT_FLDIGI == 'true'
-            CreateShortCut "$QUICKLAUNCH\${FLDIGI_DESCRIPTION}.lnk" "$INSTDIR\${FLDIGI_BINARY}" "" \
-                           "$INSTDIR\${FLDIGI_BINARY}" 0
+            CreateShortCut "$QUICKLAUNCH\${FLDIGI_DESCRIPTION}.lnk" "$INSTDIR\${FLDIGI_LINK}" "" \
+                           "$INSTDIR\${FLDIGI_LINK}" 0
         ${EndIf}
     !endif
     !ifdef HAVE_FLARQ
         ${If} $WANT_FLARQ == 'true'
-            CreateShortCut "$QUICKLAUNCH\${FLARQ_DESCRIPTION}.lnk" "$INSTDIR\${FLARQ_BINARY}" "" \
-                           "$INSTDIR\${FLARQ_BINARY}" 0
+            CreateShortCut "$QUICKLAUNCH\${FLARQ_DESCRIPTION}.lnk" "$INSTDIR\${FLARQ_LINK}" "" \
+                           "$INSTDIR\${FLARQ_LINK}" 0
         ${EndIf}
     !endif
 SectionEnd
@@ -214,13 +219,13 @@ Section "Uninstall"
 
     # Remove files and uninstaller
     !ifdef HAVE_FLDIGI
-        Delete /REBOOTOK $INSTDIR\${FLDIGI_BINARY}
+        Delete /REBOOTOK $INSTDIR\${FLDIGI_LINK}
         !ifdef FLDIGI_LOCALE_DIR
             RMDir /r /REBOOTOK $INSTDIR\${FLDIGI_LOCALE_DIR}
         !endif
     !endif
     !ifdef HAVE_FLARQ
-        Delete /REBOOTOK $INSTDIR\${FLARQ_BINARY}
+        Delete /REBOOTOK $INSTDIR\${FLARQ_LINK}
     !endif
     Delete /REBOOTOK $INSTDIR\uninstall.exe
 
