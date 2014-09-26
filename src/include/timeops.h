@@ -25,9 +25,14 @@ struct timeval& operator-=(struct timeval &t0, const struct timeval &t1);
 bool operator>(const struct timeval &t0, const struct timeval &t1);
 bool operator==(const struct timeval &t0, const struct timeval &t1);
 
-#ifndef GMTIME_R
+// If we're dealing with winpthreads then these are defined by macro.
+#ifdef WIN_PTHREADS_H
+#define HAVE_GMTIME_R
+#else
+#ifndef HAVE_GMTIME_R
 extern struct tm *gmtime_r(const time_t *timer, struct tm *tmbuf);
 extern struct tm *localtime_r(const time_t *_Time,struct tm *_Tm);
+#endif
 #endif
 
 #endif // TIMEOPS_H_
