@@ -138,7 +138,7 @@ SectionEnd
 	    File /r "${FLDIGI_LOCALE_DIR}"
         !endif
         !ifdef RUNTIMES
-            File /r "${RUNTIMES}"
+            File /nonfatal "${RUNTIMES}"
         !endif
         StrCpy $WANT_FLDIGI "true"
     SectionEnd
