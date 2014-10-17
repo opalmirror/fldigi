@@ -34,7 +34,9 @@
 #  endif
 #  include <netinet/in.h>
 #else
-#  include <winsock2.h>
+#  ifndef _WINSOCK2API_
+#    include <winsock2.h>
+#  endif
 #endif
 
 #include <string>

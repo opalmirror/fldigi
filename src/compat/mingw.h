@@ -3,7 +3,9 @@
 
 #include <sys/types.h>
 #include <pthread.h>
+#ifndef _WINSOCK2API_
 #include <winsock2.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
