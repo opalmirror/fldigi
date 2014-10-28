@@ -30,6 +30,10 @@
 
 #include <config.h>
 
+#ifndef _WINSOCK2API_
+#include <winsock2.h>
+#endif
+
 #include "xmlrpc.h"
 
 #include <iostream>

@@ -35,6 +35,10 @@
 
 #include <iostream>
 
+#ifndef _WINSOCK2API_
+#include <winsock2.h>
+#endif
+
 using namespace std;
 
 #include "feld.h"

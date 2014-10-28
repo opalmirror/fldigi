@@ -31,6 +31,7 @@
 #  ifdef __CYGWIN__
 #    include <w32api/windows.h>
 #  else
+#    include <winsock2.h>
 #    include <windows.h>
 #  endif
 #endif

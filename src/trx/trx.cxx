@@ -25,6 +25,10 @@
 
 #include <config.h>
 
+#ifndef _WINSOCK2API_
+#include <winsock2.h>
+#endif
+
 #include <sys/time.h>
 #include <fcntl.h>
 #include <semaphore.h>

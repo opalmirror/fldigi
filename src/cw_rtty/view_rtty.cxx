@@ -25,6 +25,10 @@
 #include <iostream>
 using namespace std;
 
+#ifndef _WINSOCK2API_
+#include <winsock2.h>
+#endif
+
 #include "rtty.h"
 #include "view_rtty.h"
 #include "fl_digi.h"
