@@ -482,32 +482,17 @@ if(HAVE_FLUID AND WANT_FLARQ)
     target_include_directories(flarq_ui PRIVATE flarq-src/include)
 endif()
 
-#if WANT_FLDIGI
-#    WANT_FLDIGI = yes
-#    INSTALLER_FILE = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)_setup.exe
-#    APPBUNDLE=$(PACKAGE_TARNAME)-$(PACKAGE_VERSION)
-#    APPBUNDLE_NOLIBS=$(APPBUNDLE)-nolibs
-#endif
-#if WANT_FLARQ
-#    WANT_FLARQ = yes
-#if !WANT_FLDIGI
-#        INSTALLER_FILE = flarq-$(FLARQ_VERSION)_setup.exe
-#        APPBUNDLE=flarq-$(FLARQ_VERSION)
-#        APPBUNDLE_NOLIBS=$(APPBUNDLE)-nolibs
-#endif
-#endif
+if(DARWIN)
+    set(FLDIGI_BUNDLE_ICON_FILE ${CMAKE_SOURCE_DIR}/data/mac/fldigi.icns)
+    set(FLARQ_BUNDLE_ICON_FILE ${CMAKE_SOURCE_DIR}/data/mac/flarq.icns)
+    set_source_files_properties(${FLDIGI_BUNDLE_ICON_FILE}
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    set_source_files_properties(${FLARQ_BUNDLE_ICON_FILE}
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    list(APPEND fldigi_SOURCES ${FLDIGI_BUNDLE_ICON_FILE})
+    list(APPEND flarq_SOURCES ${FLARQ_BUNDLE_ICON_FILE})
+endif()
 
-#if DARWIN
-#appbundle: $(bin_PROGRAMS)
-#	$(call silent,APPB  ,$(APPBUNDLE_NOLIBS) $(APPBUNDLE))sh ../scripts/mkappbundle.sh "../data" .
-#    CLEAN_LOCAL += $(APPBUNDLE_NOLIBS) $(APPBUNDLE) $(APPBUNDLE)*.dmg
-#endif
-
-#if HAVE_NSIS
-#nsisinst: $(bin_PROGRAMS)
-#	$(call silent,NSIS  ,$(INSTALLER_FILE))sh ../scripts/mknsisinst.sh "../data" .
-#    CLEANFILES += $(INSTALLER_FILE)
-#endif
 
 #if WANT_FLDIGI
 #if ENABLE_HAMLIB
@@ -530,6 +515,7 @@ if(WANT_FLDIGI)
     set_target_properties (fldigi PROPERTIES
         COMPILE_DEFINITIONS "BUILD_FLDIGI -DPKGDATADIR=\"${CMAKE_INSTALL_FULL_DATADIR}\"")
     install(TARGETS fldigi
+        BUNDLE DESTINATION . COMPONENT Runtime
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS ../scripts/fldigi-shell
         DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -545,5 +531,6 @@ if(WANT_FLARQ)
     target_include_directories(flarq PRIVATE flarq-src/include)
     set_target_properties (flarq PROPERTIES COMPILE_DEFINITIONS "BUILD_FLARQ")
     install(TARGETS flarq
+        BUNDLE DESTINATION . COMPONENT Runtime
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

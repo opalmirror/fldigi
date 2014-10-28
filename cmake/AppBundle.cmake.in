@@ -1,0 +1,12 @@
+#
+# App Bundle configuration for Mac OSX
+#
+
+# Variables set during cmake configuration.
+set(WANT_FLDIGI @WANT_FLDIGI@)
+set(WANT_FLARQ @WANT_FLARQ@)
+
+# This is run during "make package".
+include(BundleUtilities)
+if(WANT_FLDIGI)
+    fixup_bundle("${FLDIGI_BIN}" 

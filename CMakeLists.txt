@@ -24,7 +24,6 @@ option(WANT_FLDIGI "Build Fldigi." ON)
 option(WANT_FLARQ "Build Flarq." ON)
 option(ENABLE_NLS "Use Native Language Support" ON)
 option(ENABLE_HAMLIB "Enable hamlib for rig control." ON)
-option(ENABLE_MAC_UNIVERSAL "Build a universal binary on Mac OS X" OFF)
 option(ENABLE_STATIC "Use static linking for some libraries." OFF)
 
 # Setup default CXX flags
@@ -105,6 +104,8 @@ elseif(WIN32 AND NOT MSYS)
     endif()
     unset(_date)
     unset(_time)
+else()
+    set(BUILD_DATE "unknown")
 endif()
 
 # Grok hostname, set to unknown first in case process fails.
@@ -191,11 +192,19 @@ if(NOT UNIX)
 endif()
 
 ### OSX
-# Set ac_cv_mac_universal to yes/no
-# Set DARWIN Makefile conditional
-# Substitute MAC_UNIVERSAL_CFLAGS and MAC_UNIVERSAL_LDFLAGS in Makefile
-if(APPLE)
-    # Do the right thing at some point.
+if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(DARWIN TRUE)
+    if(CMAKE_SYSTEM_VERSION VERSION_LESS "10.4")
+        message(FATAL_ERROR "OS X 10.4 is the minimum version.")
+    endif()
+    option(ENABLE_MAC_UNIVERSAL "Build a universal binary on Mac OS X" ON)
+    # Use builtin regex
+    set(HAVE_REGEX_H FALSE)
+    if(CMAKE_SYSTEM_VERSION VERSION_EQUAL "10.4")
+        set(CMAKE_OSX_ARCHITECTURES=ppc;i386)
+    else()
+        set(CMAKE_OSX_ARCHITECTURES=ppc;i386;ppc64;x86_64)
+    endif()
 endif()
 
 ### win32
@@ -288,25 +297,25 @@ set(FLTK_SKIP_FORMS TRUE)
 #find_package(FLTK REQUIRED CONFIG)
 find_package(FLTK REQUIRED)
 if(FLTK_FOUND)
+    set(HAVE_FLUID TRUE)
     include_directories(${FLTK_INCLUDE_DIRS})
     # Set required CXX flags.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLTK_CXX_FLAGS}")
     # FindFLTK does not properly handle ldflags for static libraries.
     get_filename_component(FLTK_LIB_EXT ${FLTK_BASE_LIBRARY} EXT)
     if(${FLTK_LIB_EXT} STREQUAL ${CMAKE_STATIC_LIBRARY_SUFFIX})
-        message(STATUS "Using static FLTK libraries.")
         execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --use-images --ldstaticflags
             OUTPUT_VARIABLE FLTK_LDFLAGS)
+        message(STATUS "FLTK Static LDFLAGS: ${FLTK_LDFLAGS}")
         separate_arguments(FLTK_LDFLAGS)
         foreach(_FLAG ${FLTK_LDFLAGS})
+            string(STRIP "${_FLAG}" _FLAG)
             string(REGEX MATCH "^-l.+" _LDFLAG ${_FLAG})
-            string(STRIP "${_LDFLAG}" _LDFLAG)
             list(APPEND FLTK_LIBRARIES ${_LDFLAG})
         endforeach()
         list(REMOVE_DUPLICATES FLTK_LIBRARIES)
     endif()
-    list(APPEND COMMON_LINK_LIBS ${FLTK_LIBRARIES})
-    set(HAVE_FLUID TRUE)
+    list(APPEND COMMON_LINK_LIBS ${FLTK_LIBRARIES} -ljpeg -lpng)
 endif()
 
 ### OSS
@@ -358,8 +367,7 @@ pkg_check_modules(PORTAUDIO portaudio-2.0)
 if(PORTAUDIO_FOUND AND PORTAUDIO_VERSION VERSION_GREATER 18)
     include_directories(${PORTAUDIO_INCLUDE_DIRS})
     list(APPEND FLDIGI_LINK_LIBS ${PORTAUDIO_LIBRARIES})
-    exec_program(${PKG_CONFIG_EXECUTABLE}
-        ARGS --cflags-only-other portaudio-2.0
+    execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --cflags-only-other portaudio-2.0
         OUTPUT_VARIABLE PORTAUDIO_CFLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PORTAUDIO_CFLAGS}")
     add_definitions(-DUSE_PORTAUDIO)
@@ -450,6 +458,10 @@ else()
     message(STATUS "Both asciidoc and a2x are required to build man pages and html guide.")
 endif()
 
+# Cleanup CXX_FLAGS
+string(STRIP "${CMAKE_CXX_FLAGS}" CMAKE_CXX_FLAGS)
+
+# Setup config.h
 configure_file(${CMAKE_SOURCE_DIR}/cmake/config.h.in
     ${CMAKE_BINARY_DIR}/config.h
 )
@@ -489,7 +501,22 @@ if(GETTEXT_FOUND AND ENABLE_NLS)
     add_subdirectory(po)
 endif()
 
+# Setup packaging for Mac OSX.
+if(DARWIN)
+    # Reuse existing plist.info but replace %% with @.
+    file(READ ${CMAKE_SOURCE_DIR}/data/mac/Info.plist.in PLIST)
+    string(REPLACE "%%" "@" PLIST ${PLIST})
+    string(CONFIGURE "${PLIST}" PLIST @ONLY)
+    file(WRITE ${CMAKE_BINARY_DIR}/cmake/Info.plist ${PLIST})
+    # Write AppBundle config file which is run during packaging.
+    configure_file(cmake/AppBundle.cmake.in cmake/AppBundle.cmake @ONLY)
+    install(SCRIPT ${CMAKE_BINARY_DIR}/cmake/AppBundle.cmake)
+    set(CPACK_BUNDLE_NAME)
+    set(CPACK_BINARY_DRAGNDROP ON)
+    include(CPack)
+endif()
 
+# Setup packaging for Windows.
 if(WIN32 AND (WANT_FLDIGI OR WANT_FLARQ))
     # Collect required runtimes (libraries not linked statically)
     # Must be run at install time since binaries are scanned.
