@@ -88,7 +88,7 @@ endif()
 
 # If FLTK has been built using CMake we try to find everything directly
 
-# Search only if the location is not already known.
+# Generate search locations only if the location is not specified.
 if(NOT FLTK_CONFIG_DIR)
   # Get the system search path as a list.
   file(TO_CMAKE_PATH "$ENV{PATH}" FLTK_CONFIG_DIR_SEARCH2)
@@ -102,52 +102,54 @@ if(NOT FLTK_CONFIG_DIR)
     message(STATUS "Raw search directories: ${FLTK_CONFIG_DIR_SEARCH}")
   endif()
   string(REPLACE "//" "/" FLTK_CONFIG_DIR_SEARCH "${FLTK_CONFIG_DIR_SEARCH}")
-
-  #
-  # Look for an installation or build tree.
-  #
-  find_file(FLTK_CONFIG_FILE FLTKConfig.cmake
-    # Look for an environment variable FLTK_DIR.
-    PATHS
-    ENV FLTK_DIR
-
-    # Look in places relative to the system executable search path.
-    ${FLTK_CONFIG_DIR_SEARCH}
-
-    # On mulilib systems FLTKConfig.cmake would go in the library path since
-    # it contains arch specific data.
-    ${CMAKE_SYSTEM_LIBRARY_PATH}
-
-    # Look in standard UNIX install locations.
-    /usr/local/lib/fltk
-    /usr/lib/fltk
-    /usr/local/fltk
-    /usr/X11R6/include
-
-    # Read from the CMakeSetup registry entries.  It is likely that
-    # FLTK will have been recently built.
-    # TODO: Is this really a good idea?  I can already hear the user screaming, "But
-    # it worked when I configured the build LAST week!"
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild1]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild2]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild3]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild4]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild5]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild6]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild7]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild8]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild9]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild10]
-
-    PATH_SUFFIXES
-      FLTK
-      FLTK-1.0
-      FLTK-1.1
-      FLTK-1.2
-      FLTK-1.3
-    # Help the user find it if we cannot.
-    DOC "The directory containing FLTKConfig.cmake.  This is either the root of the build tree, PREFIX/lib/fltk, or similar for an installation.")
 endif()
+
+#
+# Look for a CMake based installation or build tree.
+#
+find_file(FLTK_CONFIG_FILE FLTKConfig.cmake
+  # Look for an environment variable FLTK_DIR.
+  PATHS
+  ENV FLTK_DIR
+
+  # Look in places relative to the system executable search path.
+  ${FLTK_CONFIG_DIR_SEARCH}
+
+  # On mulilib systems FLTKConfig.cmake would go in the library path since
+  # it contains arch specific data.
+  ${CMAKE_SYSTEM_LIBRARY_PATH}
+
+  # Look in standard UNIX install locations.
+  /usr/local/lib/fltk
+  /usr/lib/fltk
+  /usr/local/fltk
+  /usr/X11R6/include
+
+  # Read from the CMakeSetup registry entries.  It is likely that
+  # FLTK will have been recently built.
+  # TODO: Is this really a good idea?  I can already hear the user screaming, "But
+  # it worked when I configured the build LAST week!"
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild1]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild2]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild3]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild4]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild5]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild6]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild7]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild8]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild9]
+  [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild10]
+
+  PATH_SUFFIXES
+    FLTK
+    FLTK-1.0
+    FLTK-1.1
+    FLTK-1.2
+    FLTK-1.3
+	
+  # Help the user find it if we cannot.
+  DOC "The directory containing FLTKConfig.cmake.  This is either the root of the build tree, PREFIX/lib/fltk, or similar for an installation.")
+
 
 # Check if FLTK was built using CMake
 if(EXISTS ${FLTK_CONFIG_FILE})
@@ -167,6 +169,7 @@ if(EXISTS ${FLTK_CONFIG_FILE})
 
   # This makes no sense. FLTK_DIR is the library location, not the header.
   #set(FLTK_INCLUDE_DIR ${FLTK_DIR})
+  # Libraries found have absolute paths, this should not be needed.
   #link_directories(${FLTK_LIBRARY_DIRS})
 
   set(FLTK_BASE_LIBRARY fltk)
@@ -251,6 +254,7 @@ else()
         get_filename_component(_FLTK_POSSIBLE_LIBRARY_DIR
           ${_FLTK_POSSIBLE_LIBS} PATH)
       endif()
+	  
       #
       # Set component arguments to fltk-config
       #
@@ -266,26 +270,24 @@ else()
       endif()
 
       #
-      # Get CXX flags
+      # Get CXX flags, LDFLAGS, & LDSTATICFLAGS
       #
       execute_process(COMMAND
         ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --cxxflags
         OUTPUT_VARIABLE FLTK_CXX_FLAGS
       )
-      string(STRIP "${FLTK_CXX_FLAGS}" FLTK_CXX_FLAGS)
 
-      #
-      # Get LDFLAGS and LDSTATICFLAGS
-      #
       execute_process(COMMAND
         ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldflags
         OUTPUT_VARIABLE FLTK_LD_FLAGS
       )
+
       execute_process(COMMAND
         ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldstaticflags
         OUTPUT_VARIABLE FLTK_LDSTATIC_FLAGS
       )
       # Remove any whitespace
+      string(STRIP "${FLTK_CXX_FLAGS}" FLTK_CXX_FLAGS)
       string(STRIP "${FLTK_LD_FLAGS}" FLTK_LD_FLAGS)
       string(STRIP "${FLTK_LDSTATIC_FLAGS}" FLTK_LDSTATIC_FLAGS)
     endif()
@@ -311,7 +313,7 @@ else()
     PATHS ${FLTK_LIBRARY_SEARCH_PATH})
 
   # Find the extra libraries needed for the fltk_images library.
-  if(UNIX AND FLTK_CONFIG_SCRIPT)
+  if(UNIX OR (MINGW AND CMAKE_CROSSCOMPILING) AND FLTK_CONFIG_SCRIPT)
       execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --use-images --ldflags
         OUTPUT_VARIABLE FLTK_IMAGES_LDFLAGS)
       set(FLTK_LIBS_EXTRACT_REGEX ".*-lfltk_images (.*) -lfltk.*")
