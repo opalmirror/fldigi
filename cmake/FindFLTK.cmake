@@ -222,8 +222,7 @@ else()
   #
   # Try to find FLTK include dir, version, and libraries using fltk-config
   #
-  if(UNIX OR (MINGW AND CMAKE_CROSSCOMPILING))
-  #if(UNIX)
+  if(UNIX OR MSYS OR (MINGW AND CMAKE_CROSSCOMPILING))
     find_program(FLTK_CONFIG_SCRIPT fltk-config 
       PATHS
       ${FLTK_BIN_DIR}
@@ -231,12 +230,13 @@ else()
     )
     if(FLTK_CONFIG_SCRIPT)
     # Use fltk-config to generate a list of possible include directories
-      if(NOT FLTK_INCLUDE_DIR)
-        execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --includedir
+      if(NOT EXISTS FLTK_INCLUDE_DIR)
+        execute_process(COMMAND sh ${FLTK_CONFIG_SCRIPT} --includedir
           OUTPUT_VARIABLE FLTK_INCLUDE_DIR)
+		string(STRIP "${FLTK_INCLUDE_DIR}" FLTK_INCLUDE_DIR)
       endif()
     # Find FLTK version.
-      execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --version
+      execute_process(COMMAND sh ${FLTK_CONFIG_SCRIPT} --version
         OUTPUT_VARIABLE FLTK_VERSION)
       string(STRIP "${FLTK_VERSION}" FLTK_VERSION)
     # Parse the version into individual variables.
@@ -248,7 +248,7 @@ else()
       #
       # Try to find FLTK library
       #
-      execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --libs
+      execute_process(COMMAND sh ${FLTK_CONFIG_SCRIPT} --libs
         OUTPUT_VARIABLE _FLTK_POSSIBLE_LIBS)
       if(_FLTK_POSSIBLE_LIBS)
         get_filename_component(_FLTK_POSSIBLE_LIBRARY_DIR
@@ -273,17 +273,17 @@ else()
       # Get CXX flags, LDFLAGS, & LDSTATICFLAGS
       #
       execute_process(COMMAND
-        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --cxxflags
+        sh ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --cxxflags
         OUTPUT_VARIABLE FLTK_CXX_FLAGS
       )
 
       execute_process(COMMAND
-        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldflags
+        sh ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldflags
         OUTPUT_VARIABLE FLTK_LD_FLAGS
       )
 
       execute_process(COMMAND
-        ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldstaticflags
+        sh ${FLTK_CONFIG_SCRIPT} ${FLTK_CONFIG_ARGS} --ldstaticflags
         OUTPUT_VARIABLE FLTK_LDSTATIC_FLAGS
       )
       # Remove any whitespace
@@ -313,8 +313,8 @@ else()
     PATHS ${FLTK_LIBRARY_SEARCH_PATH})
 
   # Find the extra libraries needed for the fltk_images library.
-  if(UNIX OR (MINGW AND CMAKE_CROSSCOMPILING) AND FLTK_CONFIG_SCRIPT)
-      execute_process(COMMAND ${FLTK_CONFIG_SCRIPT} --use-images --ldflags
+  if(UNIX OR MSYS OR(MINGW AND CMAKE_CROSSCOMPILING) AND FLTK_CONFIG_SCRIPT)
+      execute_process(COMMAND sh ${FLTK_CONFIG_SCRIPT} --use-images --ldflags
         OUTPUT_VARIABLE FLTK_IMAGES_LDFLAGS)
       set(FLTK_LIBS_EXTRACT_REGEX ".*-lfltk_images (.*) -lfltk.*")
       if("${FLTK_IMAGES_LDFLAGS}" MATCHES "${FLTK_LIBS_EXTRACT_REGEX}")
@@ -357,6 +357,7 @@ else()
 endif()
 
 if(NOT FLTK_FIND_QUIETLY)
+  message("   FLTK Include directory: ${FLTK_INCLUDE_DIR}")
   message("   FLTK CXX Flags: ${FLTK_CXX_FLAGS}")
   message("   FLTK Linker Flags: ${FLTK_LD_FLAGS}")
   message("   FLTK Static Linker Flags: ${FLTK_LDSTATIC_FLAGS}")
