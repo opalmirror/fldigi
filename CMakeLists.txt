@@ -55,13 +55,21 @@ mark_as_advanced(CLEAR
 # major and minor must be integers; patch may
 # contain other characters or be empty
 # FIXME: Probably should be pulled from configure.ac
-set(FLDIGI_VERSION_MAJOR 3)
-set(FLDIGI_VERSION_MINOR 22)
-set(FLDIGI_VERSION_PATCH .0CN)
+file(READ configure.ac _CONFIGURE_AC)
+string(REGEX REPLACE ".*FLDIGI_MAJOR,[ ]+\\[([0-9]+)\\].*" "\\1"
+    FLDIGI_VERSION_MAJOR "${_CONFIGURE_AC}")
+string(REGEX REPLACE ".*FLDIGI_MINOR,[ ]+\\[([0-9]+)\\].*" "\\1"
+    FLDIGI_VERSION_MINOR "${_CONFIGURE_AC}")
+string(REGEX REPLACE ".*FLDIGI_PATCH,[ ]+\\[(\\.[0-9A-Z]+)\\].*" "\\1"
+    FLDIGI_VERSION_PATCH "${_CONFIGURE_AC}")
+string(REGEX REPLACE ".*FLARQ_MAJOR,[ ]+\\[([0-9]+)\\].*" "\\1"
+    FLARQ_VERSION_MAJOR "${_CONFIGURE_AC}")
+string(REGEX REPLACE ".*FLARQI_MINOR,[ ]+\\[([0-9]+)\\].*" "\\1"
+    FLARQ_VERSION_MINOR "${_CONFIGURE_AC}")
+string(REGEX REPLACE ".*FLARQI_PATCH,[ ]+\\[(\\.[0-9A-Z]+)\\].*" "\\1"
+    FLARQ_VERSION_PATCH "${_CONFIGURE_AC}")
+
 string(REPLACE "." "" FLDIGI_VERSION_PATCH_NODOT "${FLDIGI_VERSION_PATCH}")
-set(FLARQ_VERSION_MAJOR 4)
-set(FLARQ_VERSION_MINOR 3)
-set(FLARQ_VERSION_PATCH .3)
 string(REPLACE "." "" FLARQ_VERSION_PATCH_NODOT "${FLARQ_VERSION_PATCH}")
 
 set(FLDIGI_VERSION ${FLDIGI_VERSION_MAJOR}.${FLDIGI_VERSION_MINOR}${FLDIGI_VERSION_PATCH})
