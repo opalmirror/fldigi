@@ -6,10 +6,6 @@
 #include <cstdlib>
 #include <string>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include "fl_digi.h"
 
 #include "signal.h"

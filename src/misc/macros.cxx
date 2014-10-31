@@ -27,10 +27,6 @@
 #include <config.h>
 #include <sys/time.h>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include "macros.h"
 
 #include "gettext.h"

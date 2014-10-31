@@ -29,10 +29,6 @@
 #include <cstring>
 #include <libgen.h>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include <FL/Fl.H>
 
 #include "mfsk.h"

@@ -22,10 +22,6 @@
 
 #include <config.h>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include <FL/Fl.H>
 #include <FL/Fl_Float_Input.H>
 #include <FL/fl_draw.H>

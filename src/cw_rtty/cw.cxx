@@ -36,10 +36,6 @@
 #include <fstream>
 #include <cstdlib>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include "digiscope.h"
 #include "waterfall.h"
 #include "fl_digi.h"

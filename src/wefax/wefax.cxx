@@ -38,10 +38,6 @@
 #include <map>
 #include <libgen.h>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include "debug.h"
 #include "gettext.h"
 #include "wefax.h"

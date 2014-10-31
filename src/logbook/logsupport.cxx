@@ -32,10 +32,6 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-#ifndef _WINSOCK2API_
-#include <winsock2.h>
-#endif
-
 #include "main.h"
 #include "trx.h"
 #include "debug.h"

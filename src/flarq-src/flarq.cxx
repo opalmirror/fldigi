@@ -34,10 +34,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#ifdef __MINGW32__
-#	include "compat.h"
-#endif
-
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Enumerations.H>
@@ -56,6 +52,10 @@
 //#  if defined(WIN32) && !defined(__CYGWIN__) && !defined(__WATCOMC__) && !defined(__WOE32__)
 
 #include <FL/filename.H>
+
+#ifdef __MINGW32__
+#	include "compat.h"
+#endif
 
 #include <dirent.h>
 
