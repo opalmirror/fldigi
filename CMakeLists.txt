@@ -64,9 +64,9 @@ string(REGEX REPLACE ".*FLDIGI_PATCH,[ ]+\\[(\\.[0-9A-Z]+)\\].*" "\\1"
     FLDIGI_VERSION_PATCH "${_CONFIGURE_AC}")
 string(REGEX REPLACE ".*FLARQ_MAJOR,[ ]+\\[([0-9]+)\\].*" "\\1"
     FLARQ_VERSION_MAJOR "${_CONFIGURE_AC}")
-string(REGEX REPLACE ".*FLARQI_MINOR,[ ]+\\[([0-9]+)\\].*" "\\1"
+string(REGEX REPLACE ".*FLARQ_MINOR,[ ]+\\[([0-9]+)\\].*" "\\1"
     FLARQ_VERSION_MINOR "${_CONFIGURE_AC}")
-string(REGEX REPLACE ".*FLARQI_PATCH,[ ]+\\[(\\.[0-9A-Z]+)\\].*" "\\1"
+string(REGEX REPLACE ".*FLARQ_PATCH,[ ]+\\[(\\.[0-9A-Z]+)\\].*" "\\1"
     FLARQ_VERSION_PATCH "${_CONFIGURE_AC}")
 
 string(REPLACE "." "" FLDIGI_VERSION_PATCH_NODOT "${FLDIGI_VERSION_PATCH}")
