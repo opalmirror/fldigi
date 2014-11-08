@@ -398,7 +398,7 @@ void Wizard::create_wizard(void)
 		b->align(buttons[i].align | FL_ALIGN_INSIDE);
 		b->size(static_cast<int>(fl_width(get_icon_label_text(b)) + icon_pad * 2), b->h());
 	}
-	set_active(prev, false);
+	::set_active(prev, false);
 	done->hide();
 	place_buttons();
 
@@ -485,9 +485,9 @@ void Wizard::wizard_cb(Fl_Widget* w, void* arg)
 
 	// modify buttons
 	if (cur == wiz->tabs[0].tab)
-		set_active(wiz->prev, false);
+		::set_active(wiz->prev, false);
 	else if (cur == wiz->tabs[1].tab)
-		set_active(wiz->prev, true);
+		::set_active(wiz->prev, true);
 	else if (cur == wiz->tabs.back().tab) {
 		wiz->done->show();
 		wiz->next->hide();

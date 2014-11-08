@@ -531,10 +531,10 @@ void FTextRX::handle_context_menu(void)
 #undef test_item
 
 	// availability of editing items depend on buffer state
-	set_active(&menu[RX_MENU_COPY], tbuf->selected());
-	set_active(&menu[RX_MENU_CLEAR], tbuf->length());
-	set_active(&menu[RX_MENU_SELECT_ALL], tbuf->length());
-	set_active(&menu[RX_MENU_SAVE], tbuf->length());
+	::set_active(&menu[RX_MENU_COPY], tbuf->selected());
+	::set_active(&menu[RX_MENU_CLEAR], tbuf->length());
+	::set_active(&menu[RX_MENU_SELECT_ALL], tbuf->length());
+	::set_active(&menu[RX_MENU_SAVE], tbuf->length());
 
 	if (wrap)
 		menu[RX_MENU_WRAP].set();
@@ -1210,12 +1210,12 @@ void FTextTX::handle_context_menu(void)
 
 	bool modify_text_ok = insert_position() >= txpos;
 	bool selected = tbuf->selected();
- 	set_active(&menu[TX_MENU_MFSK16_IMG], active_modem->get_cap() & modem::CAP_IMG);
-	set_active(&menu[TX_MENU_CLEAR], tbuf->length());
-	set_active(&menu[TX_MENU_CUT], selected && modify_text_ok);
-	set_active(&menu[TX_MENU_COPY], selected);
-	set_active(&menu[TX_MENU_PASTE], modify_text_ok);
-	set_active(&menu[TX_MENU_READ], modify_text_ok);
+ 	::set_active(&menu[TX_MENU_MFSK16_IMG], active_modem->get_cap() & modem::CAP_IMG);
+	::set_active(&menu[TX_MENU_CLEAR], tbuf->length());
+	::set_active(&menu[TX_MENU_CUT], selected && modify_text_ok);
+	::set_active(&menu[TX_MENU_COPY], selected);
+	::set_active(&menu[TX_MENU_PASTE], modify_text_ok);
+	::set_active(&menu[TX_MENU_READ], modify_text_ok);
 
 	if (wrap)
 		menu[TX_MENU_WRAP].set();

@@ -136,13 +136,13 @@ int Fl_Input2::handle(int event)
 	}
 
 	bool sel = position() != mark(), ro = readonly();
-	set_active(&cmenu[OP_UNDO], !ro);
-	set_active(&cmenu[OP_CUT], !ro && sel);
-	set_active(&cmenu[OP_COPY], sel);
-	set_active(&cmenu[OP_PASTE], !ro);
-	set_active(&cmenu[OP_DELETE], !ro && sel);
-	set_active(&cmenu[OP_CLEAR], !ro && size());
-	set_active(&cmenu[OP_SELECT_ALL], size());
+	::set_active(&cmenu[OP_UNDO], !ro);
+	::set_active(&cmenu[OP_CUT], !ro && sel);
+	::set_active(&cmenu[OP_COPY], sel);
+	::set_active(&cmenu[OP_PASTE], !ro);
+	::set_active(&cmenu[OP_DELETE], !ro && sel);
+	::set_active(&cmenu[OP_CLEAR], !ro && size());
+	::set_active(&cmenu[OP_SELECT_ALL], size());
 
 	take_focus();
 	window()->cursor(FL_CURSOR_DEFAULT);

@@ -549,10 +549,10 @@ int FTextView::handle(int event)
 
 void FTextView::handle_context_menu(void)
 {
-	set_active(&menu[VIEW_MENU_COPY], tbuf->selected());
-	set_active(&menu[VIEW_MENU_CLEAR], tbuf->length());
-	set_active(&menu[VIEW_MENU_SELECT_ALL], tbuf->length());
-	set_active(&menu[VIEW_MENU_SAVE], tbuf->length());
+	::set_active(&menu[VIEW_MENU_COPY], tbuf->selected());
+	::set_active(&menu[VIEW_MENU_CLEAR], tbuf->length());
+	::set_active(&menu[VIEW_MENU_SELECT_ALL], tbuf->length());
+	::set_active(&menu[VIEW_MENU_SAVE], tbuf->length());
 	if (wrap)
 		menu[VIEW_MENU_WRAP].set();
 	else
@@ -819,9 +819,9 @@ LOG_INFO("DnD file %s", text.c_str());
 void FTextEdit::handle_context_menu(void)
 {
 	bool selected = tbuf->selected();
-	set_active(&menu[EDIT_MENU_CUT], selected);
-	set_active(&menu[EDIT_MENU_COPY], selected);
-	set_active(&menu[EDIT_MENU_CLEAR], tbuf->length());
+	::set_active(&menu[EDIT_MENU_CUT], selected);
+	::set_active(&menu[EDIT_MENU_COPY], selected);
+	::set_active(&menu[EDIT_MENU_CLEAR], tbuf->length());
 
 	if (wrap)
 		menu[EDIT_MENU_WRAP].set();
