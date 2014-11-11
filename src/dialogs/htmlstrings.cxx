@@ -52,7 +52,8 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 &nbsp; &nbsp; &nbsp;Stefan Fendt, DL1SMF<br>\n\
 &nbsp; &nbsp; &nbsp;Leigh Klotz, WA5ZNU<br>\n\
 &nbsp; &nbsp; &nbsp;John Phelps, KL4YFD<br>\n\
-&nbsp; &nbsp; &nbsp;Andrej Lajovic, S57LN\n\
+&nbsp; &nbsp; &nbsp;Andrej Lajovic, S57LN<br>\n\
+&nbsp; &nbsp; &nbsp;Robert Stiles, KK5VD<br>\n\
 <H4>Localization:</H4>\n\
 &nbsp; &nbsp; &nbsp;Dutch:   Peter van der Post,  PA1POS<br>\n\
 &nbsp; &nbsp; &nbsp;French:  St\351phane Fillod,     F8CFE<br>\n\
