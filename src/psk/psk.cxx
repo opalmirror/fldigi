@@ -1361,7 +1361,7 @@ static double averageamp;
 			
 			static double phasequality=0;
 			phasequality = ( (phasequality + fabs(cos( n/2 * phase))) / 2.0f  ); // Differential modem: average the probabilities between previous-symbol and current-symbol
-			int soft_qualityerror; // This value added to soft 0 or subtracted from soft 1
+			int soft_qualityerror = 0; // This value added to soft 0 or subtracted from soft 1
 			
 			if (_xpsk) soft_qualityerror = static_cast<int>(128 * phasequality) ; 
 			else if (_8psk) soft_qualityerror = static_cast<int>(128 - (128 * phasequality)) ; 

@@ -3,6 +3,8 @@
 //
 // Copyright (C) 2006-2009
 //		Dave Freese, W1HKJ
+// Copyright (C) 2014
+//		John Phelps, KL4YFD
 //
 // This file is part of fldigi.  Adapted from code contained in gmfsk source code
 // distribution.
@@ -51,6 +53,17 @@
 
 #define SOFTPROFILE false
 
+// df=19 : correct up to 9 bits
+#define	K16		16
+#define	K16_POLY1	0152711
+#define	K16_POLY2	0126723
+
+// df=16 : correct up to 7 bits
+// Code has good ac(df) and bc(df) parameters for puncturing
+#define K13		13
+#define K13_POLY1	016461
+#define K13_POLY2	012767
+
 using namespace std;
 
 // MFSKpic receive start delay value based on a viterbi length of 45
@@ -69,6 +82,8 @@ bool xmt_filter = true;
 
 //=============================================================================
 char mfskmsg[80];
+char mfskconfidence[80];
+
 //=============================================================================
 
 #include "mfsk-pic.cxx"
@@ -160,6 +175,8 @@ mfsk::mfsk(trx_mode mfsk_mode) : modem()
 	cap |= CAP_AFC | CAP_REV;
 
 	double bw, cf, flo, fhi;
+	_puncturing = false;
+	fec_confidence = 0;
 	mode = mfsk_mode;
 	depth = 10;
 
@@ -223,24 +240,35 @@ mfsk::mfsk(trx_mode mfsk_mode) : modem()
 		cap |= CAP_IMG;
 		preamble = 214;
 		break;
-
+		
+	case MODE_MFSK32L:
+		samplerate = 8000;
+		symlen =  256;
+		symbits =    4;
+		depth = 200;
+		preamble = 1300;
+		basetone = 16;
+		numtones = 16;
+		break;
 	case MODE_MFSK64L:
 		samplerate = 8000;
 		symlen =  128;
 		symbits =    4;
 		depth = 400;
-		preamble = 2500;
+		preamble = 2580;
 		basetone = 16;
 		numtones = 16;
+		//_puncturing = true; // puncture @ 2.5/4 rate
 		break;
-	case MODE_MFSK128L:
+	case MODE_MFSK64Lx2:
 		samplerate = 8000;
-		symlen =  64;
-		symbits =   4;
-		depth = 800;
-		preamble = 5000;
-		basetone = 8;
-		numtones = 16;
+		symlen =  128;
+		symbits =   5;
+		depth = 500;
+		preamble = 5250;
+		basetone = 16;
+		numtones = 32;
+		//_puncturing = true; // puncture @ 3/5 rate
 		break;
 
 	case MODE_MFSK11:
@@ -289,14 +317,32 @@ mfsk::mfsk(trx_mode mfsk_mode) : modem()
 
 	pipe		= new rxpipe[ 2 * symlen ];
 
-	enc			= new encoder (K, POLY1, POLY2);
-	dec1		= new viterbi (K, POLY1, POLY2);
-	dec2		= new viterbi (K, POLY1, POLY2);
-
-	dec1->settraceback (tracepair.trace);
-	dec2->settraceback (tracepair.trace);
-	dec1->setchunksize (1);
-	dec2->setchunksize (1);
+	dec1 = dec2 = NULL;
+	
+	if ( mode == MODE_MFSK64L || mode == MODE_MFSK64Lx2 ) {
+		enc = new encoder (K13, K13_POLY1, K13_POLY2);
+		dec1 = new viterbi (K13, K13_POLY1, K13_POLY2);
+		dec2 = new viterbi (K13, K13_POLY1, K13_POLY2);
+		dec1->settraceback (PATHMEM);
+		dec2->settraceback (PATHMEM);
+		
+	} else if ( mode == MODE_MFSK32L ) { // Use heavy FEC: correct up to 9-bit errors
+		enc = new encoder (K16, K16_POLY1, K16_POLY2);
+		dec1 = new viterbi (K16, K16_POLY1, K16_POLY2);
+		dec2 = new viterbi (K16, K16_POLY1, K16_POLY2);
+		dec1->settraceback (PATHMEM);
+		dec2->settraceback (PATHMEM);
+	
+	} else {
+		enc	= new encoder (K, POLY1, POLY2);
+		dec1	= new viterbi (K, POLY1, POLY2);
+		dec2	= new viterbi (K, POLY1, POLY2);
+		dec1->settraceback (tracepair.trace);
+		dec2->settraceback (tracepair.trace);
+	}
+	
+	if (dec1) dec1->setchunksize (1);
+	if (dec2) dec2->setchunksize (1);
 
 	txinlv = new interleave (symbits, depth, INTERLEAVE_FWD);
 	rxinlv = new interleave (symbits, depth, INTERLEAVE_REV);
@@ -455,7 +501,7 @@ void mfsk::recvchar(int c)
 
 	if (check_picture_header(c) == true) {
 		counter = tracepair.delay;
-printf("symbolbit = %d, symbits = %d\n", symbolbit, symbits);
+//printf("symbolbit = %d, symbits = %d\n", symbolbit, symbits);
 		switch (mode) {
 			case MODE_MFSK16:
 				if (symbolbit == symbits) counter += symlen;
@@ -532,7 +578,7 @@ void mfsk::decodesymbol(unsigned char symbol)
 	symcounter = symcounter ? 0 : 1;
 
 // only modes with odd number of symbits need a vote
-	if (symbits == 5 || symbits == 3) { // could use symbits % 2 == 0
+	if (symbits & 0x1) {
 		if (symcounter) {
 			if ((c = dec1->decode(symbolpair, &met)) == -1)
 				return;
@@ -561,7 +607,18 @@ void mfsk::decodesymbol(unsigned char symbol)
 		s2n_metric = metric * 3 - 42;
 		s2n_metric = CLAMP(s2n_metric, 0.0, 100.0);
 	}
+	
+	//printf("\n %d", met);
+	
+	// Calculate the FEC relative confidence for indicator
+	if (met < 1) fec_confidence = 0;
+	else if (met < 256 / 2) fec_confidence -=  1 + fec_confidence / 4;
+	else fec_confidence += 5;
+	
+	if (fec_confidence < 0) fec_confidence = 0;
+	if (fec_confidence > 100) fec_confidence = 100;
 
+	
 	// Re-scale the metric and update main window
 	metric -= 32.0;
 	if (metric <= 5.0) metric = 5.0;
@@ -659,12 +716,15 @@ void mfsk::softdecode(cmplx *bins)
 	}
 
 	rxinlv->symbols(symbols);
-
+	
 	for (i = 0; i < symbits; i++) {
 		symbolbit = i + 1;
 		decodesymbol(symbols[i]);
 		if (counter) return;
 	}
+	
+	// recover punctured high-bit
+	if (_puncturing) decodesymbol(128);
 }
 
 cmplx mfsk::mixer(cmplx in, double f)
@@ -732,6 +792,18 @@ void mfsk::update_syncscope()
 	scopedata.next(); // change buffers
 	snprintf(mfskmsg, sizeof(mfskmsg), "s/n %3.0f dB", 20.0 * log10(s2n));
 	put_Status1(mfskmsg);
+	
+	// Scale FEC indicatior to reduce erratic / jumpy / unreadable display in GUI
+	int scalefec;
+	if (fec_confidence++ > 90) scalefec = 100;
+	else if (fec_confidence++ > 60) scalefec = 75;
+	else if (fec_confidence++ > 40) scalefec = 50;
+	else if (fec_confidence++ >= 20) scalefec = 25;
+	else if ( fec_confidence > 9) scalefec = 10;
+	else scalefec = 0; // Else just round to 0.
+
+	snprintf(mfskconfidence, sizeof(mfskconfidence), "FEC: %3.1d%%", scalefec);
+	put_Status2(mfskconfidence);
 }
 
 void mfsk::synchronize()
@@ -929,7 +1001,13 @@ void mfsk::sendbit(int bit)
 		bitshreg = (bitshreg << 1) | ((data >> i) & 1);
 		bitstate++;
 
-		if (bitstate == symbits) {
+		if (bitstate == symbits && !_puncturing) {
+			txinlv->bits(&bitshreg);
+			sendsymbol(bitshreg);
+			bitstate = 0;
+			bitshreg = 0;
+		} else if (_puncturing && (bitstate > symbits) ) { 
+			bitshreg = bitshreg & 31; // Drop the high bit
 			txinlv->bits(&bitshreg);
 			sendsymbol(bitshreg);
 			bitstate = 0;
@@ -1047,7 +1125,8 @@ int mfsk::tx_process()
 		case TX_STATE_PREAMBLE:
 			clearbits();
 
-			if (mode != MODE_MFSK64L && mode != MODE_MFSK128L )
+			// RSID is used for long-modes preamble.
+			if (mode != MODE_MFSK32L && mode != MODE_MFSK64L && mode != MODE_MFSK64Lx2 )
 				for (int i = 0; i < preamble / 3; i++)
 					sendbit(0);
 

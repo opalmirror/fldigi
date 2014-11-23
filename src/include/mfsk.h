@@ -55,6 +55,18 @@
 #define	POLY1	0x6d
 #define	POLY2	0x4f
 
+
+// df=16 : correct up to 7 bits
+// Code has good ac(df) and bc(df) parameters for puncturing
+#define K13		13
+#define K13_POLY1	016461
+#define K13_POLY2	012767
+
+// df=19 : correct up to 9 bits
+#define	K16		16
+#define	K16_POLY1	0152711
+#define	K16_POLY2	0126723
+
 class	mfsk;
 
 extern 	int		print_time_left(float secs, char *str, size_t len,
@@ -152,6 +164,7 @@ protected:
 	double basefreq;
 	int counter;
 	int depth;
+	bool _puncturing;
 // receive
 	int				rxstate;
 	C_FIR_filter	*hbfilt;
@@ -191,6 +204,7 @@ protected:
 	double noise;
 	double afcmetric;
 	bool	staticburst;
+	int fec_confidence;
 	
 	double currfreq;
 

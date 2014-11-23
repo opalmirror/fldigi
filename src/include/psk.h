@@ -122,6 +122,8 @@ private:
 	int				dcdbits;
 	cmplx			quality;
 	int				acquire;
+	
+	int			fec_confidence;
 
 	viewpsk*		pskviewer;
 	pskeval*		evalpsk;
