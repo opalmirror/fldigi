@@ -1,8 +1,17 @@
+2015-01-04  David Freese  <iam_w1hkj@w1hkj.com>
+
+	4b61437: Port audio index
+	0900952: CW output level
+	52a0adc: fftfilt
+	261347a: Documentation
+	390f748: MFSK squelch
+	9f8da25: Rx display
+	bb76bac: Log fields
+	7e610ff: Logbook/Macro file chooser
+	6d11c02: ADIF temp log
 
 
 =Version 3.22.04=
-
-2014-12-25  David Freese  <iam_w1hkj@w1hkj.com>
 
 	2c3b965: xmlrpc
 
@@ -25,6 +34,7 @@
 	103c039: Xmt Audio Stream
 	6947d33: RX Text
 	0612ec9: OpenBSD
+	6066cc0: Alpha 3.22
 	d344fac: LOGGER EXPORT
 	d5e257d: Documentation
 	b767b48: LOG lookup
