@@ -2915,8 +2915,8 @@ bool clean_exit(bool ask) {
 			}
 		}
 	} else {
-		if (ask && 
-			progdefaults.confirmExit && 
+		if (ask &&
+			progdefaults.confirmExit &&
 			(!(progdefaults.changed && progdefaults.SaveConfig) ||
 			 !(macros.changed && progdefaults.SaveMacros) ||
 			 !(!oktoclear && progdefaults.NagMe))) {
@@ -3493,11 +3493,25 @@ void cb_toggle_smeter(Fl_Widget *w, void *v)
 	toggle_smeter();
 }
 
+extern void cb_scripts(bool);
+
+void cb_menu_scripts(Fl_Widget*, void*)
+{
+	cb_scripts(false);
+}
+
+extern void cb_create_default_script(void);
+
+void cb_menu_make_default_scripts(Fl_Widget*, void*)
+{
+	cb_create_default_script();
+}
+
+
 static void cb_opmode_show(Fl_Widget* w, void*);
 
 static Fl_Menu_Item menu_[] = {
 {_("&File"), 0,  0, 0, FL_SUBMENU, FL_NORMAL_LABEL, 0, 14, 0},
-
 { icons::make_icon_label(_("Folders")), 0, 0, 0, FL_SUBMENU, _FL_MULTI_LABEL, 0, 14, 0},
 { icons::make_icon_label(_("Fldigi config..."), folder_open_icon), 0, cb_ShowConfig, 0, 0, _FL_MULTI_LABEL, 0, 14, 0},
 { icons::make_icon_label(_("FLMSG files..."), folder_open_icon), 0, cb_ShowFLMSG, 0, 0, _FL_MULTI_LABEL, 0, 14, 0},
@@ -3524,8 +3538,13 @@ static Fl_Menu_Item menu_[] = {
 
 { icons::make_icon_label(_("Exit"), log_out_icon), 'x',  (Fl_Callback*)cb_E, 0, 0, _FL_MULTI_LABEL, 0, 14, 0},
 {0,0,0,0,0,0,0,0,0},
-{ OPMODES_MLABEL, 0,  0, 0, FL_SUBMENU, FL_NORMAL_LABEL, 0, 14, 0},
 
+{ _("Scripts"), 0,  0, 0, FL_SUBMENU, FL_NORMAL_LABEL, 0, 14, 0},
+{_("Execute Script"),  0, (Fl_Callback*)cb_menu_scripts,  0, FL_MENU_DIVIDER, FL_NORMAL_LABEL, 0, 14, 0},
+{_("Generate Script"), 0, (Fl_Callback*)cb_menu_make_default_scripts,  0, FL_MENU_DIVIDER, FL_NORMAL_LABEL, 0, 14, 0},
+{0,0,0,0,0,0,0,0,0},
+
+{ OPMODES_MLABEL, 0,  0, 0, FL_SUBMENU, FL_NORMAL_LABEL, 0, 14, 0},
 { mode_info[MODE_CW].name, 0, cb_init_mode, (void *)MODE_CW, 0, FL_NORMAL_LABEL, 0, 14, 0},
 
 { CONTESTIA_MLABEL, 0, 0, 0, FL_SUBMENU, FL_NORMAL_LABEL, 0, 14, 0},
@@ -4963,15 +4982,15 @@ void create_fl_digi_main_primary() {
 				inpRstOut1->align(FL_ALIGN_LEFT);
 
 				inpCall1 = new Fl_Input2(
-					inpFreq1->x(), y2, 
+					inpFreq1->x(), y2,
 					inpTimeOn1->x() + inpTimeOn1->w() - inpFreq1->x(),
 					Hentry, _("Call"));
 				inpCall1->tooltip(_("call sign"));
 				inpCall1->align(FL_ALIGN_LEFT);
 
 				inpName1 = new Fl_Input2(
-					next_to(inpCall1) + 20, y2, 
-					130, 
+					next_to(inpCall1) + 20, y2,
+					130,
 					Hentry, _("Op"));
 				inpName1->tooltip(_("Operator name"));
 				inpName1->align(FL_ALIGN_LEFT);

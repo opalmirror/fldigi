@@ -140,6 +140,6 @@ extern XMLRIG xmlrig;
 
 extern bool readRigXML();
 extern void	selectRigXmlFilename();
-
+extern void loadRigXmlFile(void);
 #endif
 

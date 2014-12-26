@@ -1939,6 +1939,7 @@ public:
 	static void set_rig_name(const string& name)
 	{
 		windowTitle = name;
+		if (main_window_title.find(windowTitle) == string::npos)
 		setTitle();
 	}
 	void execute(const xmlrpc_c::paramList& params, xmlrpc_c::value* retval)

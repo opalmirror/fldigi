@@ -523,3 +523,17 @@ void Fl_ComboBox::color(Fl_Color c)
 		val->color(c);
 	if (Brwsr) Brwsr->color(c);
 }
+
+int Fl_ComboBox::find_index(const char *str)
+{
+	if((listsize < 1) || !str)
+		return -1;
+
+	for (int i = 0; i < listsize; i++) {
+		if(datalist[i]->s)
+			if(strncmp(datalist[i]->s, str, FILENAME_MAX) == 0)
+				return i;
+	}
+
+	return -1;
+}

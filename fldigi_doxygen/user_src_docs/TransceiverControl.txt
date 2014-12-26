@@ -71,24 +71,26 @@ mouse cursor on a digit and then use the mouse wheel to roll the frequency
 up and down.
 <br>
 
-Manual entry of frequency can be accomplished by clicking on any digit and
-then entering the numeric value in KHz.  Don't forget the decimal
-point if you are entering a fractional KHz value.
+Manual entry of frequency can be accomplished by hovering the mouse pointer
+over the frequency display and entering the desired frequency (in Khz) via
+the keyboard. Pressing \<return\> or \<enter\> on completion sets the
+frequency to an active state, effecting rig control and future log entires.
+Don't forget the decimal point if you are entering a fractional KHz value.
 <br>
 
-The Smeter / Power-meter display is only active if fldigi is configured for xmlrpc
-control with flrig.  The transceiver must support the smeter and power out CAT query.
-fldigi does not try to estimate the smeter reading based on the audio stream.
-You can toggle viewing the Smeter / Power-meter display using the View menu item
-"View/Hide Smeter."  Be sure to save the configuration for this to persist the next
-time fldigi is executed.
+The Smeter / Power-meter display is only active if fldigi is configured for
+xmlrpc control with flrig.  The transceiver must support the smeter and power
+out CAT query. FLDigi does not try to estimate the smeter reading based on
+the audio stream. You can toggle viewing the Smeter / Power-meter display
+using the View menu item "View/Hide Smeter."  Be sure to save the
+configuration for this to persist the next time fldigi is executed.
 <br>
 
 The mode combobox, the bandwidth combobox and the frequency display
 also annunciate the current transceiver status.  If you change
 operating mode on the transceiver, that will be annunciated in the
-respective combobox and fldigi will adjust any internal parameters
-accordingly.  Fldigi queries the transceiver 10 times per second
+respective combobox and FLDigi will adjust any internal parameters
+accordingly.  FLDigi queries the transceiver 10 times per second
 to maintain a lock step with the transceiver.
 <br>
 
