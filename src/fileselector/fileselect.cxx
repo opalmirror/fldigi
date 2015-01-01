@@ -4,6 +4,7 @@
 //
 // Copyright (C) 2008-2009
 //		Stelios Bounanos, M0GLD
+//		Dave Freese, 2015
 //
 // This file is part of fldigi.
 //
@@ -25,13 +26,14 @@
 #include <cstdlib>
 #include <libgen.h>
 
+#include <FL/fl_ask.H>
+#include <FL/Fl_Native_File_Chooser.H>
+
 #include "config.h"
 
 #include "fileselect.h"
 #include "debug.h"
-
-#include <FL/fl_ask.H>
-#include <FL/Fl_Native_File_Chooser.H>
+#include "qrunner.h"
 
 /**
   \class Fl_Native_File_Chooser
@@ -109,11 +111,12 @@ using namespace std;
 namespace FSEL {
 
 string filename;
+//char szmsg[500];
 
 void create(void) {};
 void destroy(void) {};
 
-string stitle, sfilter, sdef;
+string stitle, sfilter, sdef, sdirectory;
 
 const char* select(const char* title, const char* filter, const char* def, int* fsel)
 {
@@ -131,12 +134,30 @@ const char* select(const char* title, const char* filter, const char* def, int* 
 	native.type(Fl_Native_File_Chooser::BROWSE_FILE);
 	if (!sfilter.empty()) native.filter(sfilter.c_str());
 	native.options(Fl_Native_File_Chooser::PREVIEW);
-	if (!sdef.empty()) native.preset_file(sdef.c_str());
+
+	if (!sdef.empty()) {
+		size_t p;
+#ifdef __WIN32__
+		while ((p = sdef.find("/")) != string::npos)
+			sdef[p] = '\\';
+#endif
+		native.preset_file(sdef.c_str());
+		sdirectory = sdef;
+		p = sdirectory.rfind("/");
+		if (p == string::npos) p = sdirectory.rfind("\\");
+		if ((p != string::npos) && p < (sdirectory.length() - 1)) sdirectory.erase(p);
+		native.directory(sdirectory.c_str());
+	} else {
+		sdef = "";
+		sdirectory = "";
+		native.preset_file("");
+		native.directory("");
+	}
 
 	filename.clear();
 	switch ( native.show() ) {
 		case -1: 
-			LOG_INFO("ERROR: %s\n", native.errmsg()); // Error fall through
+			LOG_ERROR("ERROR: %s\n", native.errmsg()); // Error fall through
 		case  1: 
 			return 0;
 			break;
@@ -171,11 +192,23 @@ const char* saveas(const char* title, const char* filter, const char* def, int* 
 	native.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
 	if (!sfilter.empty()) native.filter(sfilter.c_str());
 	native.options(Fl_Native_File_Chooser::NEW_FOLDER || Fl_Native_File_Chooser::SAVEAS_CONFIRM);
-	if (!sdef.empty()) native.preset_file(sdef.c_str());
+
+	if (!sdef.empty()) {
+		size_t p;
+#ifdef __WIN32__
+		while ((p = sdef.find("/")) != string::npos)
+			sdef[p] = '\\';
+#endif
+		native.preset_file(sdef.c_str());
+		sdirectory = sdef;
+		p = sdirectory.rfind("\\");
+		if ((p != string::npos) && p < (sdirectory.length() - 1)) sdirectory.erase(p);
+		native.directory(sdirectory.c_str());
+	}
 
 	filename.clear();
 	switch ( native.show() ) {
-		case -1: LOG_INFO("ERROR: %s\n", native.errmsg()); break;	// ERROR
+		case -1: LOG_ERROR("ERROR: %s\n", native.errmsg()); break;	// ERROR
 		case  1: break;		// CANCEL
 		default: 
 			if ( native.filename() ) {
@@ -209,11 +242,15 @@ const char* dir_select(const char* title, const char* filter, const char* def)
 	native.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY);
 	if (!sfilter.empty()) native.filter(sfilter.c_str());
 	native.options(Fl_Native_File_Chooser::NO_OPTIONS);
-	if (!sdef.empty()) native.directory(sdef.c_str());
+	if (!sdef.empty()) {
+		native.directory(sdef.c_str());
+		sdirectory = sdef;
+	} else
+		sdirectory.clear();
 
 	filename.clear();
 	switch ( native.show() ) {
-		case -1: LOG_INFO("ERROR: %s\n", native.errmsg()); break;	// ERROR
+		case -1: LOG_ERROR("ERROR: %s\n", native.errmsg()); break;	// ERROR
 		case  1: break;		// CANCEL
 		default:
 			if ( native.filename() ) {
